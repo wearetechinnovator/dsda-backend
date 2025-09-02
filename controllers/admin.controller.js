@@ -115,38 +115,63 @@ const create = async (req, res) => {
 
 
 const get = async (req, res) => {
-    const { userId } = req.body;
+    const userId = req.body?.userId;
+    const limit = req.body?.limit ?? 10;
+    const page = req.body?.page ?? 1;
 
-    if (!userId) {
-        return res.status(400).json({ err: 'Userid is required' })
-    }
+    const skip = (page - 1) * limit;
 
     try {
         const redisDB = await connectRedis();
-        let userData;
 
-        // Check cache;
-        userData = await redisDB.get(userId);
-        if (userData) {
-            return res.status(200).json(JSON.parse(userData));
+
+        if (userId) {
+            const cachedUser = await redisDB.get(`user:${userId}`);
+            if (cachedUser) {
+                return res.status(200).json(JSON.parse(cachedUser));
+            }
+
+            const userData = await adminModel.findOne(
+                { _id: userId },
+                { password: 0 }
+            );
+
+            if (!userData) {
+                return res.status(404).json({ err: 'No user found' });
+            }
+
+            await redisDB.setEx(`user:${userId}`, 120, JSON.stringify(userData));
+
+            return res.status(200).json(userData);
         }
 
-        userData = await adminModel.findOne({ _id: userId }, { "password": 0 });
 
-        if (!userData) {
-            return res.status(404).json({ err: 'No user found' })
+        const cacheKey = `users:page=${page}:limit=${limit}`;
+        const cachedUsers = await redisDB.get(cacheKey);
+
+        if (cachedUsers) {
+            return res.status(200).json(JSON.parse(cachedUsers));
         }
 
-        // Set cache
-        await redisDB.setEx(userId, 120, JSON.stringify(userData));
-        return res.status(200).json(userData);
+        const users = await adminModel
+            .find({}, { password: 0 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalCount = await adminModel.countDocuments({});
+
+        const result = { data: users, total: totalCount, page, limit };
+
+        await redisDB.setEx(cacheKey, 120, JSON.stringify(result));
+
+        return res.status(200).json(result);
 
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ err: "Something went wrong" });
     }
+};
 
-}
 
 
 
