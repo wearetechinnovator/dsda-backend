@@ -113,6 +113,39 @@ const create = async (req, res) => {
 
 }
 
+const update = async (req, res) => {
+    const { userId, name, password, role,
+        designation, profile_picture, email, contact
+    } = req.body;
+
+    if ([name, role, designation, email, contact].some(field => !field || field === "")) {
+        return res.status(400).json({ err: 'Please fill the requires' })
+    }
+
+    try {
+        const updateData = {
+            name, role, designation, profile_picture, email, contact
+        };
+        if (password) {
+            const hasPass = await bcryptJs.hash(password, 13);
+            updateData.password = hasPass;
+        }
+
+        const result = await adminModel.updateOne({ _id: userId }, { $set: updateData })
+
+        if (result.modifiedCount === 0) {
+            return res.status(304).json({ msg: 'No changes applied' });
+        }
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+
+}
+
 
 const get = async (req, res) => {
     const userId = req.body?.userId;
@@ -123,7 +156,6 @@ const get = async (req, res) => {
 
     try {
         const redisDB = await connectRedis();
-
 
         if (userId) {
             const cachedUser = await redisDB.get(`user:${userId}`);
@@ -158,7 +190,7 @@ const get = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
-        const totalCount = await adminModel.countDocuments({});
+        const totalCount = await adminModel.countDocuments({ isDel: "0" });
 
         const result = { data: users, total: totalCount, page, limit };
 
@@ -172,6 +204,32 @@ const get = async (req, res) => {
     }
 };
 
+const deleteRecord = async (req, res) => {
+    const { ids } = req.body;
+
+    if (!ids || ids.length === 0) {
+        return res.status(400).json({ err: 'Please provide record ids' });
+    }
+
+    try {
+        const result = await adminModel.updateMany(
+            { _id: { $in: ids } },
+            { $set: { isDel: "1" } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(304).json({ err: 'No changes applied' });
+        }
+
+        return res.status(200).json({ msg: 'Records deleted successfully', result });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+
+};
+
 
 
 
@@ -179,5 +237,7 @@ module.exports = {
     login,
     create,
     get,
-    checkToken
+    checkToken,
+    update,
+    deleteRecord
 }
