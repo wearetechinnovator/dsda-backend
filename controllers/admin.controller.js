@@ -78,7 +78,7 @@ const checkToken = async (req, res) => {
 
 const create = async (req, res) => {
     const { name, password, role,
-        designation, profile_picture, email, contact
+        designation, profile, email, contact
     } = req.body;
 
     if ([name, password, role, designation, email, contact].some(field => !field || field === "")) {
@@ -97,7 +97,7 @@ const create = async (req, res) => {
 
         const insert = await adminModel.create({
             name, password: hasPass, role,
-            designation, profile_picture, email, contact
+            designation, profile_picture: profile, email, contact
         });
 
         if (!insert) {
@@ -115,7 +115,7 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
     const { userId, name, password, role,
-        designation, profile_picture, email, contact
+        designation, profile, email, contact
     } = req.body;
 
     if ([name, role, designation, email, contact].some(field => !field || field === "")) {
@@ -124,7 +124,7 @@ const update = async (req, res) => {
 
     try {
         const updateData = {
-            name, role, designation, profile_picture, email, contact
+            name, role, designation, profile_picture: profile, email, contact
         };
         if (password) {
             const hasPass = await bcryptJs.hash(password, 13);
@@ -151,6 +151,7 @@ const get = async (req, res) => {
     const userId = req.body?.userId;
     const limit = req.body?.limit ?? 10;
     const page = req.body?.page ?? 1;
+    const trash = req.body?.trash;
 
     const skip = (page - 1) * limit;
 
@@ -179,18 +180,19 @@ const get = async (req, res) => {
 
 
         const cacheKey = `users:page=${page}:limit=${limit}`;
-        const cachedUsers = await redisDB.get(cacheKey);
+        // const cachedUsers = await redisDB.get(cacheKey);
 
-        if (cachedUsers) {
-            return res.status(200).json(JSON.parse(cachedUsers));
-        }
+        // if (cachedUsers) {
+        //     return res.status(200).json(JSON.parse(cachedUsers));
+        // }
 
         const users = await adminModel
-            .find({}, { password: 0 })
+            .find({isDel: trash ? "1" : "0"}, { password: 0 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .sort({ _id: -1 });
 
-        const totalCount = await adminModel.countDocuments({ isDel: "0" });
+        const totalCount = await adminModel.countDocuments({ isDel: trash ? "1" : "0"});
 
         const result = { data: users, total: totalCount, page, limit };
 
@@ -205,7 +207,7 @@ const get = async (req, res) => {
 };
 
 const deleteRecord = async (req, res) => {
-    const { ids } = req.body;
+    const { ids, trash } = req.body;
 
     if (!ids || ids.length === 0) {
         return res.status(400).json({ err: 'Please provide record ids' });
@@ -214,7 +216,7 @@ const deleteRecord = async (req, res) => {
     try {
         const result = await adminModel.updateMany(
             { _id: { $in: ids } },
-            { $set: { isDel: "1" } }
+            { $set: { isDel: trash ? "1" : "2" } }
         );
 
         if (result.modifiedCount === 0) {
@@ -230,6 +232,31 @@ const deleteRecord = async (req, res) => {
 
 };
 
+const restore = async (req, res) => {
+    const { ids } = req.body;
+
+    if (!ids || ids.length === 0) {
+        return res.status(400).json({ err: 'Please provide record ids' });
+    }
+
+    try {
+        const result = await adminModel.updateMany(
+            { _id: { $in: ids } },
+            { $set: { isDel: "0" } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(304).json({ err: 'No changes applied' });
+        }
+
+        return res.status(200).json({ msg: 'Records restore successfully', result });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+
+};
 
 
 
@@ -239,5 +266,6 @@ module.exports = {
     get,
     checkToken,
     update,
-    deleteRecord
+    deleteRecord,
+    restore
 }

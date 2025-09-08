@@ -86,11 +86,11 @@ const get = async (req, res) => {
 
 
         const cacheKey = `district:page=${page}:limit=${limit}:trash${trash ? true : false}`;
-        const cachedUsers = await redisDB.get(cacheKey);
+        // const cachedUsers = await redisDB.get(cacheKey);
 
-        if (cachedUsers) {
-            return res.status(200).json(JSON.parse(cachedUsers));
-        }
+        // if (cachedUsers) {
+        //     return res.status(200).json(JSON.parse(cachedUsers));
+        // }
 
         const data = await districtModel.find({ isDel: trash ? "1" : "0" })
             .skip(skip)
@@ -139,10 +139,37 @@ const deleteRecord = async (req, res) => {
 };
 
 
+const restore = async (req, res) => {
+    const { ids } = req.body;
+
+    if (!ids || ids.length === 0) {
+        return res.status(400).json({ err: 'Please provide record ids' });
+    }
+
+    try {
+        const result = await districtModel.updateMany(
+            { _id: { $in: ids } },
+            { $set: { isDel: "0" } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(304).json({ err: 'No changes applied' });
+        }
+
+        return res.status(200).json({ msg: 'Records restore successfully', result });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+
+};
+
 
 module.exports = {
     create,
     update,
     get,
-    deleteRecord
+    deleteRecord,
+    restore
 }

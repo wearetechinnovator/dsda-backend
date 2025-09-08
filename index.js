@@ -24,7 +24,6 @@ app.use("/master/api/v1", router);
 
 
 
-
 // DB connection...
 connection().then(con => {
     if (con) {

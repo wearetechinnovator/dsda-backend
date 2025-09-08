@@ -1,7 +1,5 @@
-const { update, get, deleteRecord, create } = require("../controllers/district.controller");
+const { update, get, deleteRecord, create, restore } = require("../controllers/district.controller");
 const router = require("express").Router();
-
-
 
 
 router
@@ -19,6 +17,11 @@ router
 router
     .route("/delete")
     .post(deleteRecord);
+
+router
+    .route("/restore")
+    .post(restore);
+
 
 
 module.exports = router;

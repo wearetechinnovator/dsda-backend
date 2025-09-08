@@ -61,6 +61,7 @@ const get = async (req, res) => {
     const limit = req.body?.limit ?? 10;
     const page = req.body?.page ?? 1;
     const search = req.body?.search?.trim();
+    const trash = req.body?.trash;
 
     const skip = (page - 1) * limit;
 
@@ -85,14 +86,15 @@ const get = async (req, res) => {
 
 
         const cacheKey = `sector:page=${page}:limit=${limit}`;
-        const cachedUsers = await redisDB.get(cacheKey);
+        // const cachedUsers = await redisDB.get(cacheKey);
 
-        if (cachedUsers) {
-            return res.status(200).json(JSON.parse(cachedUsers));
-        }
+        // if (cachedUsers) {
+        //     return res.status(200).json(JSON.parse(cachedUsers));
+        // }
 
-        const data = await sectorModel.find({ isDel: "0" }).skip(skip).limit(limit).sort({ _id: -1 });
-        const totalCount = await sectorModel.countDocuments({ isDel: "0" });
+        const data = await sectorModel.find({ isDel: trash ? "1" : "0" })
+            .skip(skip).limit(limit).sort({ _id: -1 });
+        const totalCount = await sectorModel.countDocuments({ isDel: trash ? "1" : "0" });
 
         const result = { data: data, total: totalCount, page, limit };
 
@@ -109,7 +111,7 @@ const get = async (req, res) => {
 
 
 const deleteRecord = async (req, res) => {
-    const { ids } = req.body;
+    const { ids, trash } = req.body;
 
     if (!ids || ids.length === 0) {
         return res.status(400).json({ err: 'Please provide record ids' });
@@ -118,7 +120,7 @@ const deleteRecord = async (req, res) => {
     try {
         const result = await sectorModel.updateMany(
             { _id: { $in: ids } },
-            { $set: { isDel: "1" } }
+            { $set: { isDel: trash ? "1" : "2" } }
         );
 
         if (result.modifiedCount === 0) {
@@ -135,10 +137,37 @@ const deleteRecord = async (req, res) => {
 };
 
 
+const restore = async (req, res) => {
+    const { ids } = req.body;
+
+    if (!ids || ids.length === 0) {
+        return res.status(400).json({ err: 'Please provide record ids' });
+    }
+
+    try {
+        const result = await sectorModel.updateMany(
+            { _id: { $in: ids } },
+            { $set: { isDel: "0" } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(304).json({ err: 'No changes applied' });
+        }
+
+        return res.status(200).json({ msg: 'Records restore successfully', result });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+
+};
+
 
 module.exports = {
     create,
     update,
     get,
-    deleteRecord
+    deleteRecord,
+    restore
 }
