@@ -44,7 +44,7 @@ const login = async (req, res) => {
         }, jwtKey);
 
 
-        return res.status(200).json({ token });
+        return res.status(200).json({ token, userId: admin._id});
 
     } catch (error) {
         console.log(error);
@@ -118,9 +118,11 @@ const update = async (req, res) => {
         designation, profile, email, contact
     } = req.body;
 
+
     if ([name, role, designation, email, contact].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
+
 
     try {
         const updateData = {
@@ -160,9 +162,9 @@ const get = async (req, res) => {
 
         if (userId) {
             const cachedUser = await redisDB.get(`user:${userId}`);
-            if (cachedUser) {
-                return res.status(200).json(JSON.parse(cachedUser));
-            }
+            // if (cachedUser) {
+            //     return res.status(200).json(JSON.parse(cachedUser));
+            // }
 
             const userData = await adminModel.findOne(
                 { _id: userId },
