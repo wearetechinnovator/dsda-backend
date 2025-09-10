@@ -3,9 +3,9 @@ const districtModel = require("../models/district.model");
 
 
 const create = async (req, res) => {
-    const { name, status, details } = req.body;
+    const { name, details } = req.body;
 
-    if ([name, status].some(field => !field || field === "")) {
+    if ([name].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 
@@ -16,7 +16,7 @@ const create = async (req, res) => {
             return res.status(409).json({ err: 'District already exists' })
         }
 
-        const insert = await districtModel.create({ name, status, details });
+        const insert = await districtModel.create({ name, details });
 
         if (!insert) {
             return res.status(401).json({ err: 'District creation failed' })
@@ -33,15 +33,15 @@ const create = async (req, res) => {
 
 
 const update = async (req, res) => {
-    const { name, status, details, id } = req.body;
+    const { name, details, id } = req.body;
 
-    if ([name, status, id].some(field => !field || field === "")) {
+    if ([name, id].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 
     try {
 
-        const result = await districtModel.updateOne({ _id: id }, { $set: { name, status, details } })
+        const result = await districtModel.updateOne({ _id: id }, { $set: { name, details } })
 
         if (result.modifiedCount === 0) {
             return res.status(304).json({ msg: 'No changes applied' });

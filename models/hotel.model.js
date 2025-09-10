@@ -65,11 +65,6 @@ const hotelSchema = new mongoose.Schema({
     document: String,
     username: String,
     password: String,
-    staus: {
-        type: Boolean,
-        enum: ['0', '1'], // 1=`Oparetive` | 0=`InOparetive`
-        default: '0'
-    },
     last_login_ip: String,
     last_login_date_time: String,
     isDel: {

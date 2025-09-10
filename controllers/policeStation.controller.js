@@ -3,9 +3,9 @@ const policeStationModel = require("../models/policeStation.model");
 
 
 const create = async (req, res) => {
-    const { name, status, details, district } = req.body;
+    const { name, details, district } = req.body;
 
-    if ([name, status, district].some(field => !field || field === "")) {
+    if ([name, district].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 
@@ -16,7 +16,7 @@ const create = async (req, res) => {
             return res.status(409).json({ err: 'Police Station already exists' })
         }
 
-        const insert = await policeStationModel.create({ name, status, details, district });
+        const insert = await policeStationModel.create({ name, details, district });
 
         if (!insert) {
             return res.status(401).json({ err: 'Police Station creation failed' })
@@ -33,9 +33,9 @@ const create = async (req, res) => {
 
 
 const update = async (req, res) => {
-    const { name, status, details, district, id } = req.body;
+    const { name, details, district, id } = req.body;
 
-    if ([name, status, id].some(field => !field || field === "")) {
+    if ([name, id].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 
@@ -43,7 +43,7 @@ const update = async (req, res) => {
 
         const result = await policeStationModel.updateOne({ _id: id }, {
             $set: {
-                name, status, details, district
+                name, details, district
             }
         })
 
@@ -80,7 +80,7 @@ const get = async (req, res) => {
 
             return res.status(200).json(data);
         }
-        
+
         if (search) {
             const regex = new RegExp(search, "i");
             const data = await policeStationModel.find({ isDel: "0", name: regex })
@@ -96,9 +96,9 @@ const get = async (req, res) => {
         //     return res.status(200).json(JSON.parse(cachedUsers));
         // }
 
-        const data = await policeStationModel.find({ isDel: trash ? "1" : "0"})
+        const data = await policeStationModel.find({ isDel: trash ? "1" : "0" })
             .skip(skip).limit(limit).sort({ _id: -1 }).populate("district");
-        const totalCount = await policeStationModel.countDocuments({ isDel: trash ? "1" : "0"});
+        const totalCount = await policeStationModel.countDocuments({ isDel: trash ? "1" : "0" });
 
         const result = { data: data, total: totalCount, page, limit };
 

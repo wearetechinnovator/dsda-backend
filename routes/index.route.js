@@ -4,7 +4,8 @@ const districtRoute = require("./district.route");
 const blockRoute = require("./block.route");
 const zoneRoute = require("./block.route");
 const sectorRoute = require("./sector.route")
-const policeStationRoute = require("./policeStation.route")
+const policeStationRoute = require("./policeStation.route");
+const settingRoute = require("./setting.route");
 
 
 router.use("/admin", adminRoute);
@@ -13,5 +14,6 @@ router.use("/block", blockRoute);
 router.use("/zone", zoneRoute);
 router.use("/sector", sectorRoute);
 router.use("/police-station", policeStationRoute);
+router.use("/site-setting", settingRoute);
 
 module.exports = router;
