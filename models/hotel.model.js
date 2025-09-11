@@ -1,72 +1,95 @@
 const mongoose = require('mongoose');
 
 const hotelSchema = new mongoose.Schema({
-    name: String,
-    category: {
+    hotel_name: String,
+    hotel_category: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'hotelcategory'
+        ref: 'hotel_categories'
     },
-    year_of_establishment: String,
-    zone: {
+    hotel_year_of_establishment: String,
+    hotel_zone_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'zone'
     },
-    district: {
+    hotel_district_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'district'
     },
-    police_station: {
+    hotel_police_station_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'policestation'
     },
-    sector: {
+    hotel_sector_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'sector'
     },
-    block: {
+    hotel_block_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'block'
     },
-    address: String,
-    email: String,
-    reception_phone: String,
-    proprietor_name: String,
-    proprietor_phone: String,
-    manager_name: String,
-    manager_phone: String,
-    manager_phone_alternative: String,
-    minimum_rate: String,
-    maximum_rate: String,
-    has_restaurant: {
-        type: Boolean,
+    hotel_address: String,
+    hotel_email: String,
+    hotel_reception_phone: String,
+    hotel_proprietor_name: String,
+    hotel_proprietor_phone: String,
+    hotel_manager_name: String,
+    hotel_manager_phone: String,
+    hotel_manager_phone_alternative: String,
+    hotel_minimum_rate: String,
+    hotel_maximum_rate: String,
+    hotel_has_restaurant: {
+        type: String,
         enum: ['0', '1'],// 1=`YES` | 0=`NO`
         default: '0'
     },
-    has_conference_hall: {
-        type: Boolean,
+    hotel_has_conference_hall: {
+        type: String,
         enum: ['0', '1'], // 1=`YES` | 0=`NO`
         default: '0'
     },
-    has_ac: {
-        type: Boolean,
+    hotel_has_ac: {
+        type: String,
         enum: ['0', '1'], // 1=`YES` | 0=`NO`
         default: '0'
     },
-    has_swiming_pool: {
-        type: Boolean,
+    hotel_has_swiming_pool: {
+        type: String,
         enum: ['0', '1'], // 1=`YES` | 0=`NO`
         default: '0'
     },
-    website: String,
-    gmb: String,
-    distance_from_main_road: String,
-    distance_from_sea_beach: String,
-    gallery_image: String,
-    document: String,
-    username: String,
-    password: String,
+    hotel_has_parking: {
+        type: String,
+        enum: ['0', '1'], // 1=`YES` | 0=`NO`
+        default: '0'
+    },
+    hotel_website: String,
+    hotel_gmb: String,
+    hotel_distance_from_main_road: String,
+    hotel_distance_from_sea_beach: String,
+    hotel_gallery_image: [],
+    hotel_document: [],
+    hotel_room_type: [],
+    hotel_username: String,
+    hotel_password: String,
+    hotel_1_bed_room: String,
+    hotel_2_bed_room: String,
+    hotel_3_bed_room: String,
+    hotel_4_bed_room: String,
+    hotel_5_bed_room: String,
+    hotel_6_bed_room: String,
+    hotel_7_bed_room: String,
+    hotel_8_bed_room: String,
+    hotel_9_bed_room: String,
+    hotel_10_bed_room: String,
+    hotel_total_room: String,
+    hotel_total_bed: String,
     last_login_ip: String,
     last_login_date_time: String,
+    hotel_status: {
+        type: String,
+        enum: ['0', '1'], // 0=`Inactive` | 1=`Active`
+        default: '0'
+    },
     isDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=`Active` | 1=`Trash` | 2=`Permanent Delete`

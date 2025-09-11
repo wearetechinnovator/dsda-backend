@@ -37,7 +37,7 @@ const update = async (req, res) => {
 
     if (isLogo) {
         await settingModel.updateOne({}, { logo })
-         return res.status(200).json({ msg: "Logo update success" });
+        return res.status(200).json({ msg: "Logo update success" });
     }
 
     if ([title, charges_per_tourist].some(field => !field || field === "")) {

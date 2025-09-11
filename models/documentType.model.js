@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const hotelCategorySchema = new mongoose.Schema({
-    hotel_category_name: String,
+const documentTypeSchema = new mongoose.Schema({
+    document_type_name: String,
     isDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=Active | 1=Trash | 2=Permanent Delete
@@ -10,4 +10,4 @@ const hotelCategorySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-module.exports = mongoose.model("hotel_categories", hotelCategorySchema);
+module.exports = mongoose.model("document_types", documentTypeSchema);
