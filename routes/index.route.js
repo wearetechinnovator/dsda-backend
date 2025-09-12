@@ -7,6 +7,7 @@ const sectorRoute = require("./sector.route")
 const policeStationRoute = require("./policeStation.route");
 const settingRoute = require("./setting.route");
 const constantRoute = require("./constant.route");
+const hotelRoute = require("./hotel.route");
 
 
 router.use("/admin", adminRoute);
@@ -17,5 +18,6 @@ router.use("/sector", sectorRoute);
 router.use("/police-station", policeStationRoute);
 router.use("/site-setting", settingRoute);
 router.use("/constant-type", constantRoute);
+router.use("/hotel", hotelRoute);
 
 module.exports = router;

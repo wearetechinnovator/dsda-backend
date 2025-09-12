@@ -1,3 +1,4 @@
+const bcryptJs = require("bcryptjs");
 const hotelModel = require("../models/hotel.model");
 
 
@@ -9,7 +10,9 @@ const create = async (req, res) => {
     distanceFromSeaBeach, ac,swimingPool, parkingAvailable,
     username, password, receptionPhone, proprietorName, proprietorPhone, managerName,
     managerPhone, alternateManagerPhone, restaurantAvailable, conferanceHallAvailable,
-    status
+    status, oneBed, twoBed, threeBed, fourBed, fiveBed, sixBed,
+    sevenBed, eightBed, nineBed, tenBed, totalBed, totalRoom,
+    photoGallery, documentData, roomTypeData
     } = req.body;
 
 
@@ -22,6 +25,8 @@ const create = async (req, res) => {
       return res.status(409).json({ err: "Hotel already exists" });
     }
 
+    // Hash Password;
+    const hashPassword = await bcryptJs.hash(password, 10);
 
     const insert = await hotelModel.create({
       hotel_name: name,
@@ -46,7 +51,7 @@ const create = async (req, res) => {
       hotel_has_conference_hall: conferanceHallAvailable,
       hotel_has_parking: parkingAvailable,
       hotel_username: username,
-      hotel_password: password,
+      hotel_password: hashPassword,
       hotel_reception_phone: receptionPhone,
       hotel_proprietor_name: proprietorName,
       hotel_proprietor_phone: proprietorPhone,
@@ -54,13 +59,29 @@ const create = async (req, res) => {
       hotel_manager_phone: managerPhone,
       hotel_manager_phone_alternative: alternateManagerPhone,
       hotel_status: status || "0",
+      hotel_1_bed_room: oneBed,
+      hotel_2_bed_room: twoBed,
+      hotel_3_bed_room: threeBed,
+      hotel_4_bed_room: fourBed,
+      hotel_5_bed_room: fiveBed,
+      hotel_6_bed_room: sixBed,
+      hotel_7_bed_room: sevenBed,
+      hotel_8_bed_room: eightBed,
+      hotel_9_bed_room: nineBed,
+      hotel_10_bed_room: tenBed,
+      hotel_total_bed: totalBed,
+      hotel_total_room: totalRoom,
+      hotel_gallery_image: photoGallery,
+      hotel_document: documentData,
+      hotel_room_type: roomTypeData
+
     });
 
     if (!insert) {
       return res.status(401).json({ err: "Hotel creation failed" });
     }
 
-    return res.status(201).json(insert);
+    return res.status(200).json(insert);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "Something went wrong" });
