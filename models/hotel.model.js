@@ -52,7 +52,7 @@ const hotelSchema = new mongoose.Schema({
         enum: ['0', '1'], // 1=`YES` | 0=`NO`
         default: '0'
     },
-    hotel_has_swiming_pool: {
+    hotel_has_swimming_pool: {
         type: String,
         enum: ['0', '1'], // 1=`YES` | 0=`NO`
         default: '0'
