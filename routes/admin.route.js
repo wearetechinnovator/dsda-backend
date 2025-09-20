@@ -2,7 +2,8 @@ const router = require("express").Router();
 const {
     login, create,
     get, checkToken, update, deleteRecord,
-    restore
+    restore,
+    changePass
 } = require("../controllers/admin.controller");
 
 
@@ -19,6 +20,9 @@ router
 router
     .route("/update-users")
     .post(update);
+router
+    .route("/change-password")
+    .post(changePass);
 
 
 router

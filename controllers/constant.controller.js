@@ -5,16 +5,21 @@
  * 2. Id Card Type
  * 3. Room Type
  * 4. Hotel Categories
+ * 5. Country
+ * 6. State
  */
 
 const documentTypeModel = require("../models/documentType.model");
 const roomTypeModel = require("../models/roomType.model");
 const idCardTypeModel = require("../models/roomType.model");
 const hotelCategory = require("../models/hotelCategory.model");
+const stateModel = require("../models/state.model");
+const countryModel = require("../models/country.model");
 
 
 const get = async (req, res) => {
-    const { which } = req.params; // `room` | `id` | `document` | `hotel-category`
+    // `room` | `id` | `document` | `hotel-category` | `country` | `state`
+    const { which } = req.params; 
     let model;
 
     if (which === "room") {
@@ -25,6 +30,10 @@ const get = async (req, res) => {
         model = documentTypeModel;
     } else if (which === "hotel-category") {
         model = hotelCategory;
+    } else if (which === "country") {
+        model = countryModel;
+    } else if (which === "state") {
+        model = stateModel;
     } else {
         return res.status(401).json({ err: "Invalid type" });
     }

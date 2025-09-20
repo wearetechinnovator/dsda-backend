@@ -113,6 +113,36 @@ const create = async (req, res) => {
 
 }
 
+const changePass = async (req, res) => {
+    const { userId, currentPassword, newPassword } = req.body;
+
+    if (!userId || !currentPassword || !newPassword) {
+        return res.status(400).json({ err: 'Please fill the requires' })
+    }
+
+    try {
+        const admin = await adminModel.findOne({ _id: userId });
+        if (!admin) {
+            return res.status(404).json({ err: 'User not found' });
+        }
+
+        const checkPass = await bcryptJs.compare(currentPassword, admin.password);
+        if (!checkPass) {
+            return res.status(401).json({ err: 'Incorrect password' });
+        }
+
+        // Proceed with password change
+        const newHashedPass = await bcryptJs.hash(newPassword, 13);
+        await adminModel.updateOne({ _id: userId }, { $set: { password: newHashedPass } });
+
+        return res.status(200).json({ msg: 'Password changed successfully' });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+}
+
 const update = async (req, res) => {
     const { userId, name, password, role,
         designation, profile, email, contact
@@ -269,5 +299,6 @@ module.exports = {
     checkToken,
     update,
     deleteRecord,
-    restore
+    restore,
+    changePass
 }
