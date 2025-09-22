@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const JWT_KEY = process.env.JWT_KEY;
 
+
+
 const middleware = async (req, res, next) => {
   try {
     let token;

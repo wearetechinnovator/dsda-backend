@@ -4,23 +4,37 @@ const app = express();
 const PORT = 8080 || process.env.PORT;
 const connection = require("./db/connection");
 const cors = require("cors");
+const compression = require("compression");
 const router = require("./routes/index.route");
 
 
 app.use(cors()); //Allow all origin;
+app.use(compression({
+    level: 6,
+    threshold: 1024,
+    filter: (req, res) => {
+        if (res.getHeader('Content-Type') === 'application/json') {
+            return true;
+        }
+        return false;
+    }
+}));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
 
+
+
 // test only (remove in production)
 app.get("/", (req, res) => {
-    res.send("hello world");
+    res.send({msg: "Hello world"});
 })
 
 
 
 // API
 app.use("/master/api/v1", router);
+
 
 
 

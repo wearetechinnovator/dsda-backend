@@ -128,7 +128,7 @@ const changePass = async (req, res) => {
 
         const checkPass = await bcryptJs.compare(currentPassword, admin.password);
         if (!checkPass) {
-            return res.status(401).json({ err: 'Incorrect password' });
+            return res.status(401).json({ err: 'Incorrect current password' });
         }
 
         // Proceed with password change
