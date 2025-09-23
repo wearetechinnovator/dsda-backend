@@ -2,11 +2,17 @@ const settingModel = require("../models/setting.model");
 
 
 const create = async (req, res) => {
-    const { title, email, contact_number, address, charges_per_tourist, logo } = req.body;
+    const {
+        title, email, contact_number, address, charges_per_tourist, logo,
+        age_for_charges, day_for_checkin_checkout, payment_start_date
+    } = req.body;
 
     // validation
-    if (!title || title === "" || !id_card_list || id_card_list.length === 0) {
-        return res.status(400).json({ err: "Please fill the required fields" });
+    if ([title, charges_per_tourist, logo, email, contact_number,
+        age_for_charges, day_for_checkin_checkout, payment_start_date]
+        .some(field => !field || field === "")
+    ) {
+        return res.status(400).json({ err: 'Please fill the requires' })
     }
 
     try {
@@ -18,7 +24,10 @@ const create = async (req, res) => {
             address,
             charges_per_tourist,
             id_card_list,
-            logo
+            logo,
+            age_for_charges,
+            day_for_checkin_checkout,
+            payment_start_date
         });
 
         return res.status(201).json(newSetting);
@@ -32,7 +41,9 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
     const { title, email, contact_number,
-        address, charges_per_tourist, logo, isLogo } = req.body;
+        address, charges_per_tourist, logo, isLogo,
+        age_for_charges, day_for_checkin_checkout, payment_start_date
+    } = req.body;
 
 
     if (isLogo) {
@@ -40,13 +51,17 @@ const update = async (req, res) => {
         return res.status(200).json({ msg: "Logo update success" });
     }
 
-    if ([title, charges_per_tourist].some(field => !field || field === "")) {
+    if ([title, charges_per_tourist, logo, email, contact_number,
+        age_for_charges, day_for_checkin_checkout, payment_start_date]
+        .some(field => !field || field === "")
+    ) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 
     try {
         const update = await settingModel.updateOne({}, {
-            title, email, contact_number, address, charges_per_tourist, logo
+            title, email, contact_number, address, charges_per_tourist, logo,
+            age_for_charges, day_for_checkin_checkout, payment_start_date
         })
 
         if (update.modifiedCount === 0) {

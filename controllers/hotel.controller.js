@@ -6,11 +6,25 @@ const jwtKey = process.env.JWT_KEY;
 
 
 const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, adminToken } = req.body;
 
-  if ([username, password].some(field => !field || field === "")) {
-    return res.status(400).json({ err: 'Please fill the requires' })
+
+  if (adminToken) {
+    if (!username) {
+      return res.status(400).json({ err: 'Please fill the requires' })
+    }
+
+    const decoded = jwt.verify(adminToken, jwtKey);
+    if (!decoded) {
+      return res.status(401).json({ err: 'Invalid admin token' });
+    }
+
+  } else {
+    if ([username, password].some(field => !field || field === "")) {
+      return res.status(400).json({ err: 'Please fill the requires' })
+    }
   }
+
 
   try {
     const hotel = await hotelModel.findOne({ hotel_username: username }, { password: 0 });
@@ -18,13 +32,15 @@ const login = async (req, res) => {
       return res.status(404).json({ err: 'User not found' });
     }
 
-    const isMatch = await bcryptJs.compare(password, hotel.hotel_password);
-    if (!isMatch) {
-      return res.status(401).json({ err: 'Invalid credentials' });
+    if (password) {
+      const isMatch = await bcryptJs.compare(password, hotel.hotel_password);
+      if (!isMatch) {
+        return res.status(401).json({ err: 'Invalid credentials' });
+      }
     }
+
     // Generate JWT token
     const token = jwt.sign({ id: hotel._id }, jwtKey);
-
     return res.status(200).json({ hotel, token });
 
   } catch (error) {
@@ -245,7 +261,12 @@ const get = async (req, res) => {
     // }
 
     const data = await hotelModel.find({ isDel: trash ? "1" : "0" })
-      .skip(skip).limit(limit).sort({ _id: -1 }).populate('hotel_sector_id').populate('hotel_zone_id').populate('hotel_district_id').populate('hotel_police_station_id').populate('hotel_category');
+      .skip(skip).limit(limit).sort({ _id: -1 })
+      .populate('hotel_sector_id')
+      .populate('hotel_zone_id')
+      .populate('hotel_district_id')
+      .populate('hotel_police_station_id')
+      .populate('hotel_category');
     const totalCount = await hotelModel.countDocuments({ isDel: trash ? "1" : "0" });
 
     const result = { data: data, total: totalCount, page, limit };

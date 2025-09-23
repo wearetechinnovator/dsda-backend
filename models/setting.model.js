@@ -7,6 +7,18 @@ const settingSchema = new mongoose.Schema({
     contact_number: String,
     address: String,
     charges_per_tourist: String,
+    age_for_charges: {
+        type: Number,
+        default: 5
+    },
+    day_for_checkin_checkout: {
+        type: Number,
+        default: 2
+    },
+    payment_start_date: {
+        type: Number,
+        default: 5
+    },
     logo: String,
     isDel: {
         type: String,

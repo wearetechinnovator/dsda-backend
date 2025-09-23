@@ -143,6 +143,7 @@ const restore = async (req, res) => {
         return res.status(400).json({ err: 'Please provide record ids' });
     }
 
+
     try {
         const result = await blockModel.updateMany(
             { _id: { $in: ids } },
