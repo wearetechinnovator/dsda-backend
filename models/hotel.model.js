@@ -91,7 +91,7 @@ const hotelSchema = new mongoose.Schema({
         enum: ['0', '1'], // 0=`Inactive` | 1=`Active`
         default: '0'
     },
-    isDel: {
+    IsDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=`Active` | 1=`Trash` | 2=`Permanent Delete`
         default: '0'

@@ -236,7 +236,7 @@ const get = async (req, res) => {
     const redisDB = await connectRedis();
 
     if (id) {
-      const data = await hotelModel.findOne({ _id: id, isDel: "0" })
+      const data = await hotelModel.findOne({ _id: id, IsDel: "0" })
         .populate('hotel_sector_id').populate('hotel_zone_id').populate('hotel_district_id').populate('hotel_police_station_id').populate('hotel_category');
       if (!data) {
         return res.status(404).json({ err: 'No data found' });
@@ -247,7 +247,7 @@ const get = async (req, res) => {
 
     if (search) {
       const regex = new RegExp(search, "i");
-      const data = await hotelModel.find({ isDel: "0", name: regex }).populate('hotel_sector_id').populate('hotel_zone_id').populate('hotel_district_id').populate('hotel_police_station_id').populat('hotel_category')
+      const data = await hotelModel.find({ IsDel: "0", name: regex }).populate('hotel_sector_id').populate('hotel_zone_id').populate('hotel_district_id').populate('hotel_police_station_id').populat('hotel_category')
 
       return res.status(200).json(data);
     }
@@ -260,14 +260,14 @@ const get = async (req, res) => {
     //     return res.status(200).json(JSON.parse(cachedUsers));
     // }
 
-    const data = await hotelModel.find({ isDel: trash ? "1" : "0" })
+    const data = await hotelModel.find({ IsDel: trash ? "1" : "0" })
       .skip(skip).limit(limit).sort({ _id: -1 })
       .populate('hotel_sector_id')
       .populate('hotel_zone_id')
       .populate('hotel_district_id')
       .populate('hotel_police_station_id')
       .populate('hotel_category');
-    const totalCount = await hotelModel.countDocuments({ isDel: trash ? "1" : "0" });
+    const totalCount = await hotelModel.countDocuments({ IsDel: trash ? "1" : "0" });
 
     const result = { data: data, total: totalCount, page, limit };
 
@@ -294,7 +294,7 @@ const deleteRecord = async (req, res) => {
   try {
     const result = await hotelModel.updateMany(
       { _id: { $in: ids } },
-      { $set: { isDel: trash ? "1" : "2" } }
+      { $set: { IsDel: trash ? "1" : "2" } }
     );
 
     if (result.modifiedCount === 0) {
@@ -321,7 +321,7 @@ const restore = async (req, res) => {
   try {
     const result = await hotelModel.updateMany(
       { _id: { $in: ids } },
-      { $set: { isDel: "0" } }
+      { $set: { IsDel: "0" } }
     );
 
     if (result.modifiedCount === 0) {
