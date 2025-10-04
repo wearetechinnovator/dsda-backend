@@ -44,7 +44,7 @@ const login = async (req, res) => {
         }, jwtKey);
 
 
-        return res.status(200).json({ token, userId: admin._id});
+        return res.status(200).json({ token, userId: admin._id });
 
     } catch (error) {
         console.log(error);
@@ -184,6 +184,7 @@ const get = async (req, res) => {
     const limit = req.body?.limit ?? 10;
     const page = req.body?.page ?? 1;
     const trash = req.body?.trash;
+    const search = req.body?.search?.trim();
 
     const skip = (page - 1) * limit;
 
@@ -210,6 +211,13 @@ const get = async (req, res) => {
             return res.status(200).json(userData);
         }
 
+        if (search) {
+            const regex = new RegExp(search, "i");
+            const data = await adminModel.find({ isDel: "0", name: regex })
+
+            return res.status(200).json(data);
+        }
+
 
         const cacheKey = `users:page=${page}:limit=${limit}`;
         // const cachedUsers = await redisDB.get(cacheKey);
@@ -219,12 +227,12 @@ const get = async (req, res) => {
         // }
 
         const users = await adminModel
-            .find({isDel: trash ? "1" : "0"}, { password: 0 })
+            .find({ isDel: trash ? "1" : "0" }, { password: 0 })
             .skip(skip)
             .limit(limit)
             .sort({ _id: -1 });
 
-        const totalCount = await adminModel.countDocuments({ isDel: trash ? "1" : "0"});
+        const totalCount = await adminModel.countDocuments({ isDel: trash ? "1" : "0" });
 
         const result = { data: users, total: totalCount, page, limit };
 

@@ -247,7 +247,12 @@ const get = async (req, res) => {
 
     if (search) {
       const regex = new RegExp(search, "i");
-      const data = await hotelModel.find({ IsDel: "0", name: regex }).populate('hotel_sector_id').populate('hotel_zone_id').populate('hotel_district_id').populate('hotel_police_station_id').populat('hotel_category')
+      const data = await hotelModel.find({ IsDel: "0", hotel_name: regex })
+        .populate('hotel_sector_id')
+        .populate('hotel_zone_id')
+        .populate('hotel_district_id')
+        .populate('hotel_police_station_id')
+        .populate('hotel_category')
 
       return res.status(200).json(data);
     }

@@ -12,7 +12,6 @@ router
     .route("/login")
     .post(login);
 
-
 router
     .route("/create-users")
     .post(create);
@@ -20,6 +19,7 @@ router
 router
     .route("/update-users")
     .post(update);
+    
 router
     .route("/change-password")
     .post(changePass);
