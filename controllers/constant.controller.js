@@ -7,6 +7,7 @@
  * 4. Hotel Categories
  * 5. Country
  * 6. State
+ * 7. City
  */
 
 const documentTypeModel = require("../models/documentType.model");
@@ -15,11 +16,12 @@ const idCardTypeModel = require("../models/roomType.model");
 const hotelCategory = require("../models/hotelCategory.model");
 const stateModel = require("../models/state.model");
 const countryModel = require("../models/country.model");
+const cityModel = require("../models/city.model");
 
 
 const get = async (req, res) => {
-    // `room` | `id` | `document` | `hotel-category` | `country` | `state`
-    const { which } = req.params; 
+    // `room` | `id` | `document` | `hotel-category` | `country` | `state` | `city`
+    const { which } = req.params;
     let model;
 
     if (which === "room") {
@@ -34,13 +36,16 @@ const get = async (req, res) => {
         model = countryModel;
     } else if (which === "state") {
         model = stateModel;
-    } else {
+    } else if (which === "city") {
+        model = cityModel;
+    }
+    else {
         return res.status(401).json({ err: "Invalid type" });
     }
 
 
     try {
-        const data = await model.find({ isDel: "0" }, {createdAt: 0, updatedAt: 0, isDel: 0 });
+        const data = await model.find({ isDel: "0" }, { createdAt: 0, updatedAt: 0, isDel: 0 });
         if (!data || data.length < 1) {
             return res.status(404).json({ err: "Data not found" });
         }

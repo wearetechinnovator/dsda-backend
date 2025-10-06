@@ -3,7 +3,8 @@ const {
     login, create,
     get, checkToken, update, deleteRecord,
     restore,
-    changePass
+    changePass,
+    sendCheckinOTP
 } = require("../controllers/admin.controller");
 
 
@@ -42,5 +43,8 @@ router
     .route("/check-token")
     .post(checkToken);
 
+router
+    .route("/send-checkin-otp")
+    .post(sendCheckinOTP);
 
 module.exports = router;

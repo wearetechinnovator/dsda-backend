@@ -3,6 +3,9 @@ const jwt = require("jsonwebtoken");
 const jwtKey = process.env.JWT_KEY;
 const bcryptJs = require("bcryptjs");
 const connectRedis = require("../db/redis");
+const crypto = require("crypto");
+const https = require('https')
+const fetch = require("node-fetch");
 
 
 
@@ -298,6 +301,78 @@ const restore = async (req, res) => {
 
 };
 
+const sendCheckinOTP = async (req, res) => {
+    const { mobile, otp } = req.body;
+
+    // --- MOBILE SMS OTP CODE (JavaScript version) ---
+    const username = "WBDSDA"; // username of the department
+    const password = "Admin12345@"; // password of the department
+    const senderid = "WBDSDA"; // sender id of the department
+    const message = `Your OTP for login to the System is ${ otp }. This OTP is valid for 60 seconds.Please do not share this OTP with others.`; // message content
+    const mobileno = mobile; // single number
+    const deptSecureKey = "9a6e9fff-02d5-4275-99f8-9992b04e7580"; // department secure key
+    const templateid = "1407168381302798926";
+
+    // Encrypt password (SHA1)
+    const encryptedPassword = crypto
+        .createHash("sha1")
+        .update(password.trim())
+        .digest("hex");
+
+
+    // Generate key (SHA512)
+    const key = crypto
+        .createHash("sha512")
+        .update(
+            username.trim() +
+            senderid.trim() +
+            message.trim() +
+            deptSecureKey.trim()
+        )
+        .digest("hex");
+
+    // Prepare data
+    const data = {
+        username: username.trim(),
+        password: encryptedPassword.trim(),
+        senderid: senderid.trim(),
+        content: message.trim(),
+        smsservicetype: "otpmsg",
+        mobileno: mobileno.trim(),
+        key: key.trim(),
+        templateid: templateid.trim(),
+    };
+    const body = new URLSearchParams(data);
+    const agent = new https.Agent({ rejectUnauthorized: false });
+    const url = "https://msdgweb.mgov.gov.in/esms/sendsmsrequestDLT";
+
+    try {
+        // const response = await axios.post(url, new URLSearchParams(data), {
+        //     headers: {
+        //         "Content-Type": "application/x-www-form-urlencoded",
+        //     },
+        //     httpsAgent: new (await import("https")).Agent({
+        //         rejectUnauthorized: false, // equivalent to CURLOPT_SSL_VERIFYPEER = false
+        //     }),
+        // });
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: body,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            agent: agent,
+        });
+
+        console.log("SMS API Response:", response.data);
+        return res.status(200).json(response.data)
+    } catch (error) {
+        console.error("Error sending OTP:", error.message);
+        return null;
+    }
+}
+
 
 
 module.exports = {
@@ -308,5 +383,6 @@ module.exports = {
     update,
     deleteRecord,
     restore,
-    changePass
+    changePass,
+    sendCheckinOTP
 }

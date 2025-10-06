@@ -1,4 +1,4 @@
-const { create, get, update, deleteRecord, restore, login } = require("../controllers/hotel.controller");
+const { create, get, update, deleteRecord, restore, login, changePassword } = require("../controllers/hotel.controller");
 const router = require("express").Router();
 
 
@@ -25,5 +25,11 @@ router
 router
     .route("/login")
     .post(login);
+
+
+router
+    .route("/change-password")
+    .post(changePassword);
+
 
 module.exports = router;

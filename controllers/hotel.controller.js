@@ -1,13 +1,12 @@
-const bcryptJs = require("bcryptjs");
 const hotelModel = require("../models/hotel.model");
 const connectRedis = require("../db/redis");
 const jwt = require('jsonwebtoken');
+const tripleSHA1 = require("../helper/sha1_hash");
 const jwtKey = process.env.JWT_KEY;
 
 
 const login = async (req, res) => {
   const { username, password, adminToken } = req.body;
-
 
   if (adminToken) {
     if (!username) {
@@ -33,8 +32,8 @@ const login = async (req, res) => {
     }
 
     if (password) {
-      const isMatch = await bcryptJs.compare(password, hotel.hotel_password);
-      if (!isMatch) {
+      const hashPassword = tripleSHA1(password, 3)
+      if (hashPassword !== hotel.hotel_password) {
         return res.status(401).json({ err: 'Invalid credentials' });
       }
     }
@@ -73,7 +72,7 @@ const create = async (req, res) => {
     }
 
     // Hash Password;
-    const hashPassword = await bcryptJs.hash(password, 10);
+    const hashPassword = tripleSHA1(password, 3)
 
     const insert = await hotelModel.create({
       hotel_name: name,
@@ -155,7 +154,7 @@ const update = async (req, res) => {
   }
 
   // Hash Password;
-  const hashPassword = await bcryptJs.hash(password, 10);
+  const hashPassword = tripleSHA1(password, 3);
 
   // Update Hotel
   try {
@@ -343,6 +342,41 @@ const restore = async (req, res) => {
 };
 
 
+const changePassword = async (req, res) => {
+  const { currentPass, newPass, hotelId } = req.body;
+
+  if (!currentPass || !newPass || !hotelId) {
+    return res.status(400).json({ err: "Please provide all required fields" });
+  }
+
+  try {
+    const hotel = await hotelModel.findById(hotelId);
+    if (!hotel) {
+      return res.status(404).json({ err: "Hotel not found" });
+    }
+
+
+    const hashedCurrent = tripleSHA1(currentPass, 3);
+    console.log(hashedCurrent);
+    if (hotel.hotel_password !== hashedCurrent) {
+      return res.status(401).json({ err: "Incorrect current password" });
+    }
+
+
+    const hashedNew = tripleSHA1(newPass, 3);
+    await hotelModel.updateOne(
+      { _id: hotelId },
+      { $set: { hotel_password: hashedNew } }
+    );
+
+    return res.status(200).json({ msg: "Password changed successfully" });
+  } catch (error) {
+    console.error("Password change error:", error);
+    return res.status(500).json({ err: "Something went wrong" });
+  }
+};
+
+
 
 
 module.exports = {
@@ -351,6 +385,7 @@ module.exports = {
   update,
   restore,
   deleteRecord,
-  login
+  login,
+  changePassword
 };
 
