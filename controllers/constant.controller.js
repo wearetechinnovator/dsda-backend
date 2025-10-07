@@ -47,6 +47,7 @@ const get = async (req, res) => {
     try {
         const data = await model.find({ isDel: "0" }, { createdAt: 0, updatedAt: 0, isDel: 0 });
         if (!data || data.length < 1) {
+            console.log("Not found..")
             return res.status(404).json({ err: "Data not found" });
         }
 
