@@ -1,8 +1,10 @@
+const fetch = require("node-fetch");
 const hotelModel = require("../models/hotel.model");
 const connectRedis = require("../db/redis");
 const jwt = require('jsonwebtoken');
 const tripleSHA1 = require("../helper/sha1_hash");
 const jwtKey = process.env.JWT_KEY;
+const bookingApi = process.env.BOOKING_API;
 
 
 const login = async (req, res) => {
@@ -228,15 +230,29 @@ const get = async (req, res) => {
   const page = req.body?.page ?? 1;
   const search = req.body?.search?.trim();
   const trash = req.body?.trash;
-
   const skip = (page - 1) * limit;
+  const isEnrolled = req.body?.enrolled;
+  const zone = req.body?.zone;
+  const sector = req.body?.sector;
+  const block = req.body?.block;
+  const district = req.body?.district;
+  const policeStation = req.body?.policeStation;
+  const hotelId = req.body?.policeStation;
+  const isOccupied = req.body?.occupied;
+
 
   try {
     const redisDB = await connectRedis();
 
     if (id) {
       const data = await hotelModel.findOne({ _id: id, IsDel: "0" })
-        .populate('hotel_sector_id').populate('hotel_zone_id').populate('hotel_district_id').populate('hotel_police_station_id').populate('hotel_category');
+        .populate('hotel_sector_id')
+        .populate('hotel_block_id')
+        .populate('hotel_zone_id')
+        .populate('hotel_district_id')
+        .populate('hotel_police_station_id')
+        .populate('hotel_category');
+
       if (!data) {
         return res.status(404).json({ err: 'No data found' });
       }
@@ -244,17 +260,59 @@ const get = async (req, res) => {
       return res.status(200).json(data);
     }
 
+
     if (search) {
       const regex = new RegExp(search, "i");
       const data = await hotelModel.find({ IsDel: "0", hotel_name: regex })
         .populate('hotel_sector_id')
+        .populate('hotel_block_id')
         .populate('hotel_zone_id')
         .populate('hotel_district_id')
         .populate('hotel_police_station_id')
         .populate('hotel_category')
 
+
+      if (isEnrolled) {
+        const result = [];
+        for (const doc of data) {
+          const d = doc.toObject();
+          const getEnrolled = await fetch(bookingApi + "/check-in/get-booking", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ hotelId: d._id, enrolled: true })
+          });
+
+          const enData = await getEnrolled.json();
+          d['hotel_total_guest'] = enData[0]?.totalGuests || 0;
+          d['hotel_total_charges'] = enData[0]?.totalCharges || 0
+          result.push(d);
+
+        }
+        return res.status(200).json(result);
+      }
+
+      if (isOccupied) {
+        const result = [];
+
+        for (const doc of data) {
+          const d = doc.toObject();
+          const getEnrolled = await fetch(bookingApi + "/check-in/get-stats", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ hotelId: d._id, occupied: true })
+          });
+          const enData = await getEnrolled.json();
+
+          d['hotel_total_occupied'] = enData?.occupied;
+          result.push(d);
+
+        }
+        return res.status(200).json(result);
+      }
+
       return res.status(200).json(data);
     }
+
 
 
     const cacheKey = `hotel:page=${page}:limit=${limit}`;
@@ -264,14 +322,68 @@ const get = async (req, res) => {
     //     return res.status(200).json(JSON.parse(cachedUsers));
     // }
 
-    const data = await hotelModel.find({ IsDel: trash ? "1" : "0" })
+    let query = { IsDel: trash ? "1" : "0" };
+
+    if (zone) query.hotel_zone_id = zone;
+    if (district) query.hotel_district_id = district;
+    if (sector) query.hotel_sector_id = sector;
+    if (block) query.hotel_block_id = block;
+    if (policeStation) query.hotel_police_station_id = policeStation;
+    if (hotelId) query._id = hotelId;
+
+    const data = await hotelModel.find(query)
       .skip(skip).limit(limit).sort({ _id: -1 })
       .populate('hotel_sector_id')
+      .populate('hotel_block_id')
       .populate('hotel_zone_id')
       .populate('hotel_district_id')
       .populate('hotel_police_station_id')
       .populate('hotel_category');
-    const totalCount = await hotelModel.countDocuments({ IsDel: trash ? "1" : "0" });
+    const totalCount = await hotelModel.countDocuments(query);
+
+
+    // Add hotel wise Total Enrolled data in current result;
+    if (isEnrolled) {
+      const result = [];
+
+      for (const doc of data) {
+        const d = doc.toObject();
+        const getEnrolled = await fetch(bookingApi + "/check-in/get-booking", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ hotelId: d._id, enrolled: true })
+        });
+
+        const enData = await getEnrolled.json();
+        d['hotel_total_guest'] = enData[0]?.totalGuests || 0;
+        d['hotel_total_charges'] = enData[0]?.totalCharges || 0
+        result.push(d);
+
+      }
+      return res.status(200).json({ data: result, total: totalCount, page, limit });
+    }
+
+
+    // Get hotel wise total Occupied Data also;
+    if (isOccupied) {
+      const result = [];
+
+      for (const doc of data) {
+        const d = doc.toObject();
+        const getEnrolled = await fetch(bookingApi + "/check-in/get-stats", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ hotelId: d._id, occupied: true })
+        });
+        const enData = await getEnrolled.json();
+
+        d['hotel_total_occupied'] = enData?.occupied;
+        result.push(d);
+
+      }
+      return res.status(200).json({ data: result, total: totalCount, page, limit });
+    }
+
 
     const result = { data: data, total: totalCount, page, limit };
 
