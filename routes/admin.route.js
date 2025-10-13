@@ -4,7 +4,8 @@ const {
     get, checkToken, update, deleteRecord,
     restore,
     changePass,
-    sendCheckinOTP
+    sendCheckinOTP,
+    getStats
 } = require("../controllers/admin.controller");
 
 
@@ -46,5 +47,9 @@ router
 router
     .route("/send-checkin-otp")
     .post(sendCheckinOTP);
+
+router
+    .route("/statictics")
+    .post(getStats);
 
 module.exports = router;

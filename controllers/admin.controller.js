@@ -6,6 +6,7 @@ const connectRedis = require("../db/redis");
 const crypto = require("crypto");
 const https = require('https')
 const fetch = require("node-fetch");
+const hotelModel = require("../models/hotel.model");
 
 
 
@@ -249,6 +250,7 @@ const get = async (req, res) => {
     }
 };
 
+
 const deleteRecord = async (req, res) => {
     const { ids, trash } = req.body;
 
@@ -301,6 +303,7 @@ const restore = async (req, res) => {
 
 };
 
+
 const sendCheckinOTP = async (req, res) => {
     const { mobile, otp } = req.body;
 
@@ -308,7 +311,7 @@ const sendCheckinOTP = async (req, res) => {
     const username = "WBDSDA"; // username of the department
     const password = "Admin12345@"; // password of the department
     const senderid = "WBDSDA"; // sender id of the department
-    const message = `Your OTP for login to the System is ${ otp }. This OTP is valid for 60 seconds.Please do not share this OTP with others.`; // message content
+    const message = `Your OTP for login to the System is ${otp}. This OTP is valid for 60 seconds.Please do not share this OTP with others.`; // message content
     const mobileno = mobile; // single number
     const deptSecureKey = "9a6e9fff-02d5-4275-99f8-9992b04e7580"; // department secure key
     const templateid = "1407168381302798926";
@@ -373,6 +376,42 @@ const sendCheckinOTP = async (req, res) => {
     }
 }
 
+// Get statictics data;
+const getStats = async (req, res) => {
+    try {
+
+        const [countOfHotels, operativeHotels, totalBeds] = await Promise.all([
+            await hotelModel.countDocuments({ IsDel: '0' }),
+            await hotelModel.countDocuments({ hotel_status: "1", IsDel: '0' }),
+            await hotelModel.aggregate([
+                {
+                    $match: { IsDel: "0" }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalBedSum: {
+                            $sum: { $toInt: "$hotel_total_bed" }
+                        }
+                    }
+                }
+            ])
+        ]);
+
+
+
+        res.status(200).json({
+            total_hotel: countOfHotels,
+            total_operative_hotel: operativeHotels,
+            total_beds: totalBeds[0]?.totalBedSum || 0
+        })
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+}
+
 
 
 module.exports = {
@@ -384,5 +423,6 @@ module.exports = {
     deleteRecord,
     restore,
     changePass,
-    sendCheckinOTP
+    sendCheckinOTP,
+    getStats
 }
