@@ -225,6 +225,7 @@ const update = async (req, res) => {
 
 
 const get = async (req, res) => {
+  const all = req.body?.all;
   const id = req.body?.id;
   const limit = req.body?.limit ?? 10;
   const page = req.body?.page ?? 1;
@@ -237,7 +238,7 @@ const get = async (req, res) => {
   const block = req.body?.block;
   const district = req.body?.district;
   const policeStation = req.body?.policeStation;
-  const hotelId = req.body?.policeStation;
+  const hotelId = req.body?.id;
   const isOccupied = req.body?.occupied;
 
 
