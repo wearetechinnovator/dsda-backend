@@ -240,7 +240,8 @@ const get = async (req, res) => {
   const policeStation = req.body?.policeStation;
   const hotelId = req.body?.id;
   const isOccupied = req.body?.occupied;
-
+  const hotelStatus = req.body?.hotelStatus;
+  console.log(hotelStatus);
 
   try {
     const redisDB = await connectRedis();
@@ -332,6 +333,9 @@ const get = async (req, res) => {
     if (block) query.hotel_block_id = block;
     if (policeStation) query.hotel_police_station_id = policeStation;
     if (hotelId) query._id = hotelId;
+    if (hotelStatus) query.hotel_status = hotelStatus;
+    console.log(query);
+
 
     const data = await hotelModel.find(query)
       .skip(skip).limit(limit).sort({ _id: -1 })
