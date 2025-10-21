@@ -8,7 +8,10 @@ const compression = require("compression");
 const router = require("./routes/index.route");
 
 
-app.use(cors()); //Allow all origin;
+app.use(cors({
+    origin: process.env.CORS_ORIGIN.split(","),
+    credentials: true
+}));
 app.use(compression({
     level: 6,
     threshold: 1024,
@@ -27,7 +30,7 @@ app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
 // test only (remove in production)
 app.get("/", (req, res) => {
-    res.send({msg: "Hello world"});
+    res.send({ msg: "Hello world" });
 })
 
 

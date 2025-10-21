@@ -14,6 +14,7 @@ const middleware = async (req, res, next) => {
     }
 
     if (!token) {
+      console.log("No token found in request");
       return res.status(401).json({ message: "No token provided" });
     }
 
