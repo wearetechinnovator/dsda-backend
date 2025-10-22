@@ -9,6 +9,7 @@ const settingRoute = require("./setting.route");
 const constantRoute = require("./constant.route");
 const hotelRoute = require("./hotel.route");
 const notieRoute = require("./notice.route");
+const amenitiesRoute = require("./amenities.route");
 
 
 router.use("/admin", adminRoute);
@@ -21,6 +22,7 @@ router.use("/site-setting", settingRoute);
 router.use("/constant-type", constantRoute);
 router.use("/hotel", hotelRoute);
 router.use("/notice", notieRoute);
+router.use("/amenities", amenitiesRoute);
 
 
 module.exports = router;
