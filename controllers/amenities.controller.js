@@ -64,9 +64,10 @@ const addAmenities = async (req, res) => {
 }
 
 
+
 const updateAmenities = async (req, res) => {
     const { mode, transactionId, status, receiptNo, id } = req.body;
-    console.log(req.body);
+
 
     if ([mode, transactionId, status, id].some(field => !field || field === "")) {
         return res.status(400).json({ err: "All fields are required" });
@@ -77,7 +78,8 @@ const updateAmenities = async (req, res) => {
             amenities_payment_mode: mode,
             amenities_payment_transaction_id: transactionId,
             amenities_payment_status: status,
-            amenities_receipt_number: receiptNo
+            amenities_receipt_number: receiptNo,
+            amenities_payment_init: '1'
         }, { new: true });
 
         if (!data) {
@@ -94,16 +96,19 @@ const updateAmenities = async (req, res) => {
 
 
 const getAmenities = async (req, res) => {
-    const hotelId = req.body?.hotelId;
+    const id = req.body?.id;
     const limit = req.body?.limit ?? 10;
     const page = req.body?.page ?? 1;
     const search = req.body?.search?.trim();
     const skip = (page - 1) * limit;
+    const startDate = req.body?.startDate;
+    const endDate = req.body?.endDate;
+    const hotelId = req.body?.hotelId;
 
     try {
 
-        if (hotelId) {
-            const data = await amenitiesModel.findOne({ amenities_hotel_id: hotelId, isDel: "0" });
+        if (id) {
+            const data = await amenitiesModel.findOne({ _id: id, isDel: "0" }).populate('amenities_hotel_id');
             if (!data) {
                 return res.status(404).json({ err: 'No data found' });
             }
@@ -113,19 +118,53 @@ const getAmenities = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
-            const data = await amenitiesModel.find({ isDel: "0", amenities_payment_transaction_id: regex })
 
-            return res.status(200).json(data);
+            const data = await await amenitiesModel.aggregate([
+                { $match: { isDel: "0" } },
+                {
+                    $lookup: {
+                        from: "hotels",
+                        localField: "amenities_hotel_id",
+                        foreignField: "_id",
+                        as: "amenities_hotel_id"
+                    }
+                },
+                { $unwind: "$amenities_hotel_id" },
+                {
+                    $match: {
+                        $or: [
+                            { amenities_payment_transaction_id: { $regex: regex } },
+                            { "amenities_hotel_id.hotel_name": { $regex: regex } }
+                        ]
+                    }
+                }
+            ]);
+
+            // remove docs where populate returned null
+            const filtered = data.filter(d => d.amenities_hotel_id);
+
+            if (!filtered.length) {
+                return res.status(404).json({ err: "No data found" });
+            }
+
+            return res.status(200).json(filtered);
         }
 
+        let query = { isDel: "0" };
+        if (startDate && endDate) {
+            query.amenities_date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+        }
+        if (hotelId) {
+            query.amenities_hotel_id = hotelId;
+        }
 
-        const data = await amenitiesModel.find({ isDel: "0" })
+        const data = await amenitiesModel.find(query)
             .skip(skip)
             .limit(limit)
             .sort({ _id: -1 })
             .populate('amenities_hotel_id');
 
-        const totalCount = await amenitiesModel.countDocuments({ isDel: "0" });
+        const totalCount = await amenitiesModel.countDocuments(query);
 
         const result = { data: data, total: totalCount, page, limit };
 
