@@ -94,7 +94,7 @@ const updateAmenities = async (req, res) => {
 
 
 const getAmenities = async (req, res) => {
-    const hotelId = req.body?.hotelId;
+    const id = req.body?.id;
     const limit = req.body?.limit ?? 10;
     const page = req.body?.page ?? 1;
     const search = req.body?.search?.trim();
@@ -102,8 +102,8 @@ const getAmenities = async (req, res) => {
 
     try {
 
-        if (hotelId) {
-            const data = await amenitiesModel.findOne({ amenities_hotel_id: hotelId, isDel: "0" });
+        if (id) {
+            const data = await amenitiesModel.findOne({ _id: id, isDel: "0" }).populate("amenities_hotel_id");
             if (!data) {
                 return res.status(404).json({ err: 'No data found' });
             }
