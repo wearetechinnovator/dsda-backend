@@ -1,6 +1,9 @@
 const {
-    addPayment, getPayment,
-    updatePayment
+    addPayment,
+    getPayment,
+    updatePayment,
+    deletePayment,
+    restorePayment
 } = require("../controllers/otherPayment.controller");
 const router = require("express").Router();
 
@@ -20,6 +23,15 @@ router
     .route("/get-payment")
     .post(getPayment);
 
+
+router
+    .route("/delete")
+    .post(deletePayment);
+
+
+router
+    .route("/restore")
+    .post(restorePayment);
 
 
 

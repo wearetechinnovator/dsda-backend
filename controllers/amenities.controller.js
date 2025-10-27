@@ -95,6 +95,7 @@ const updateAmenities = async (req, res) => {
 
 
 const getAmenities = async (req, res) => {
+    const all = req.body?.all;
     const id = req.body?.id;
     const limit = req.body?.limit ?? 10;
     const page = req.body?.page ?? 1;
@@ -115,10 +116,25 @@ const getAmenities = async (req, res) => {
             return res.status(200).json(data);
         }
 
+        if (all) {
+            const data = await amenitiesModel.find({ isDel: "0" }).populate({
+                path: 'amenities_hotel_id',
+                select: " hotel_name hotel_category hotel_zone_id hotel_district_id hotel_police_station_id hotel_sector_id hotel_block_id",
+                populate: {
+                    path: ["hotel_category", "hotel_zone_id", "hotel_district_id", "hotel_police_station_id", "hotel_sector_id", "hotel_block_id"],
+                },
+            });
+            if (!data) {
+                return res.status(404).json({ err: 'No data found' });
+            }
+
+            return res.status(200).json(data);
+        }
+
         if (search) {
             const regex = new RegExp(search, "i");
 
-            const data = await await amenitiesModel.aggregate([
+            const data = await amenitiesModel.aggregate([
                 { $match: { isDel: "0" } },
                 {
                     $lookup: {

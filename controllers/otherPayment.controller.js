@@ -1,6 +1,8 @@
 const otherPaymentModel = require("../models/otherPayment.model");
 
 
+
+
 const addPayment = async (req, res) => {
     const { hotel, purpose, amount, refId, paymentDate, status } = req.body;
 
@@ -29,6 +31,7 @@ const addPayment = async (req, res) => {
         return res.status(500).json({ err: "Something went wrong" });
     }
 }
+
 
 const updatePayment = async (req, res) => {
     const { hotel, purpose, amount, refId, paymentDate, status, id } = req.body;
@@ -70,6 +73,9 @@ const getPayment = async (req, res) => {
     const page = req.body?.page ?? 1;
     const search = req.body?.search?.trim();
     const trash = req.body?.trash;
+    const hotelId = req.body?.hotelId;
+    const amount = req.body?.amount;
+    const purpose = req.body?.purpose;
 
     const skip = (page - 1) * limit;
 
@@ -94,11 +100,19 @@ const getPayment = async (req, res) => {
         }
 
 
-        const data = await otherPaymentModel.find({
-            isDel: trash ? "1" : "0"
-        }).skip(skip).limit(limit).sort({ _id: -1 }).populate('other_payment_hotel_id');
+        let query = { isDel: trash ? "1" : "0"};
+        
+        if(hotelId) query.other_payment_hotel_id = hotelId;
+        if(purpose) query.other_payment_purpose = purpose;
+        if(amount) query.other_payment_amount = amount;
 
-        const totalCount = await otherPaymentModel.countDocuments({ isDel: trash ? "1" : "0" });
+        const data = await otherPaymentModel.find(query)
+            .skip(skip)
+            .limit(limit)
+            .sort({ _id: -1 })
+            .populate('other_payment_hotel_id');
+
+        const totalCount = await otherPaymentModel.countDocuments(query);
 
         const result = { data: data, total: totalCount, page, limit };
 
@@ -112,9 +126,65 @@ const getPayment = async (req, res) => {
 };
 
 
+const deletePayment = async (req, res) => {
+    const { ids, trash } = req.body;
+
+    if (!ids || ids.length === 0) {
+        return res.status(400).json({ err: 'Please provide record ids' });
+    }
+
+    try {
+        const result = await otherPaymentModel.updateMany(
+            { _id: { $in: ids } },
+            { $set: { isDel: trash ? "1" : "2" } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(304).json({ err: 'No changes applied' });
+        }
+
+        return res.status(200).json({ msg: 'Records deleted successfully', result });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+
+};
+
+
+const restorePayment = async (req, res) => {
+    const { ids } = req.body;
+
+    if (!ids || ids.length === 0) {
+        return res.status(400).json({ err: 'Please provide record ids' });
+    }
+
+
+    try {
+        const result = await otherPaymentModel.updateMany(
+            { _id: { $in: ids } },
+            { $set: { isDel: "0" } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(304).json({ err: 'No changes applied' });
+        }
+
+        return res.status(200).json({ msg: 'Records restore successfully', result });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+
+};
+
 
 module.exports = {
     addPayment,
     getPayment,
-    updatePayment
+    updatePayment,
+    deletePayment,
+    restorePayment
 }

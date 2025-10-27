@@ -241,13 +241,32 @@ const get = async (req, res) => {
   const hotelId = req.body?.id;
   const isOccupied = req.body?.occupied;
   const hotelStatus = req.body?.hotelStatus;
-  console.log(hotelStatus);
+
 
   try {
     const redisDB = await connectRedis();
 
     if (id) {
       const data = await hotelModel.findOne({ _id: id, IsDel: "0" })
+        .populate('hotel_sector_id')
+        .populate('hotel_block_id')
+        .populate('hotel_zone_id')
+        .populate('hotel_district_id')
+        .populate('hotel_police_station_id')
+        .populate('hotel_category');
+
+      if (!data) {
+        return res.status(404).json({ err: 'No data found' });
+      }
+
+      return res.status(200).json(data);
+    }
+
+    if (all) {
+      const data = await hotelModel.find({ IsDel: "0" }, {
+        hotel_name: 1, hotel_category: 1, hotel_zone_id: 1, hotel_district_id: 1,
+        hotel_police_station_id: 1, hotel_sector_id: 1, hotel_block_id: 1
+      })
         .populate('hotel_sector_id')
         .populate('hotel_block_id')
         .populate('hotel_zone_id')
@@ -334,7 +353,6 @@ const get = async (req, res) => {
     if (policeStation) query.hotel_police_station_id = policeStation;
     if (hotelId) query._id = hotelId;
     if (hotelStatus) query.hotel_status = hotelStatus;
-    console.log(query);
 
 
     const data = await hotelModel.find(query)
