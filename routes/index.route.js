@@ -10,6 +10,9 @@ const constantRoute = require("./constant.route");
 const hotelRoute = require("./hotel.route");
 const notieRoute = require("./notice.route");
 const amenitiesRoute = require("./amenities.route");
+const otherPaymentRoute = require('./otherPayment.route');
+
+
 
 
 router.use("/admin", adminRoute);
@@ -23,6 +26,8 @@ router.use("/constant-type", constantRoute);
 router.use("/hotel", hotelRoute);
 router.use("/notice", notieRoute);
 router.use("/amenities", amenitiesRoute);
+router.use("/other-payments", otherPaymentRoute)
+
 
 
 module.exports = router;
