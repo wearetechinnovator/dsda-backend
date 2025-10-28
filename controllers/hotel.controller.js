@@ -3,6 +3,7 @@ const hotelModel = require("../models/hotel.model");
 const connectRedis = require("../db/redis");
 const jwt = require('jsonwebtoken');
 const tripleSHA1 = require("../helper/sha1_hash");
+const amenitiesModel = require("../models/amenities.model");
 const jwtKey = process.env.JWT_KEY;
 const bookingApi = process.env.BOOKING_API;
 
@@ -263,23 +264,65 @@ const get = async (req, res) => {
     }
 
     if (all) {
-      const data = await hotelModel.find({ IsDel: "0" }, {
-        hotel_name: 1, hotel_category: 1, hotel_zone_id: 1, hotel_district_id: 1,
-        hotel_police_station_id: 1, hotel_sector_id: 1, hotel_block_id: 1
-      })
-        .populate('hotel_sector_id')
-        .populate('hotel_block_id')
-        .populate('hotel_zone_id')
-        .populate('hotel_district_id')
-        .populate('hotel_police_station_id')
-        .populate('hotel_category');
+      try {
+        const data = await hotelModel.aggregate([
+          {
+            $match: { IsDel: "0" }
+          },
+          {
+            $lookup: {
+              from: "amenities",
+              let: { hotelId: "$_id" },
+              pipeline: [
+                { $match: { $expr: { $and: [{ $eq: ["$amenities_hotel_id", "$$hotelId"] }, { $eq: ["$isDel", "0"] }] } } },
+                { $group: { _id: null, totalAmenitiesAmount: { $sum: "$amenities_amount" } } }
+              ],
+              as: "amenitiesData"
+            }
+          },
+          {
+            $addFields: {
+              totalAmenitiesAmount: {
+                $ifNull: [{ $arrayElemAt: ["$amenitiesData.totalAmenitiesAmount", 0] }, 0]
+              }
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              hotel_name: 1,
+              hotel_category: 1,
+              hotel_zone_id: 1,
+              hotel_district_id: 1,
+              hotel_police_station_id: 1,
+              hotel_sector_id: 1,
+              hotel_block_id: 1,
+              totalAmenitiesAmount: 1
+            }
+          }
+        ]);
 
-      if (!data) {
-        return res.status(404).json({ err: 'No data found' });
+        // populate reference fields
+        const populatedData = await hotelModel.populate(data, [
+          { path: "hotel_category" },
+          { path: "hotel_zone_id" },
+          { path: "hotel_district_id" },
+          { path: "hotel_police_station_id" },
+          { path: "hotel_sector_id" },
+          { path: "hotel_block_id" }
+        ]);
+
+        if (!populatedData?.length) {
+          return res.status(404).json({ err: "No hotels found" });
+        }
+
+        return res.status(200).json(populatedData);
+      } catch (err) {
+        console.error(err);
+        return res.status(500).json({ err: "Internal Server Error" });
       }
-
-      return res.status(200).json(data);
     }
+
 
 
     if (search) {

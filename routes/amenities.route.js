@@ -2,7 +2,8 @@ const router = require("express").Router();
 const {
     addAmenities,
     getAmenities,
-    updateAmenities
+    updateAmenities,
+    getTotalAmenityPay
 } = require("../controllers/amenities.controller");
 
 
@@ -20,6 +21,10 @@ router
 router
     .route("/update-amenities")
     .post(updateAmenities);
+
+router
+    .route("/get-total-amenities-pay")
+    .post(getTotalAmenityPay);
 
 
     

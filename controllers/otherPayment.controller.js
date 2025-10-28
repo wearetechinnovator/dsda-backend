@@ -76,7 +76,7 @@ const getPayment = async (req, res) => {
     const hotelId = req.body?.hotelId;
     const amount = req.body?.amount;
     const purpose = req.body?.purpose;
-
+    const transactionId = req.body?.transactionid;
     const skip = (page - 1) * limit;
 
     try {
@@ -91,20 +91,27 @@ const getPayment = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
+            let query = { isDel: "0" };
 
-            const data = await otherPaymentModel.find({
-                isDel: "0", other_payment_payment_ref_no: regex
-            }).populate('other_payment_hotel_id')
+            if (transactionId) {
+                query.other_payment_hotel_id = hotelId;
+                query.other_payment_payment_transaction_id = regex;
+            } else {
+                query.other_payment_payment_ref_no = regex;
+            }
+
+
+            const data = await otherPaymentModel.find(query).populate('other_payment_hotel_id')
 
             return res.status(200).json(data);
         }
 
 
-        let query = { isDel: trash ? "1" : "0"};
-        
-        if(hotelId) query.other_payment_hotel_id = hotelId;
-        if(purpose) query.other_payment_purpose = purpose;
-        if(amount) query.other_payment_amount = amount;
+        let query = { isDel: trash ? "1" : "0" };
+
+        if (hotelId) query.other_payment_hotel_id = hotelId;
+        if (purpose) query.other_payment_purpose = purpose;
+        if (amount) query.other_payment_amount = amount;
 
         const data = await otherPaymentModel.find(query)
             .skip(skip)

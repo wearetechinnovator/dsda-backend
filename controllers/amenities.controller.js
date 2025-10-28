@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const amenitiesModel = require("../models/amenities.model");
 const fetch = require("node-fetch");
 
@@ -104,6 +105,9 @@ const getAmenities = async (req, res) => {
     const startDate = req.body?.startDate;
     const endDate = req.body?.endDate;
     const hotelId = req.body?.hotelId;
+    const month = req.body?.month;
+    const year = req.body?.year;
+
 
     try {
 
@@ -133,9 +137,11 @@ const getAmenities = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
+            let match = { isDel: "0" };
+            if (hotelId) match.amenities_hotel_id = new mongoose.Types.ObjectId(String(hotelId));
 
             const data = await amenitiesModel.aggregate([
-                { $match: { isDel: "0" } },
+                { $match: match },
                 {
                     $lookup: {
                         from: "hotels",
@@ -148,7 +154,7 @@ const getAmenities = async (req, res) => {
                 {
                     $match: {
                         $or: [
-                            { amenities_payment_transaction_id: { $regex: regex } },
+                            { "amenities_payment_transaction_id": { $regex: regex } },
                             { "amenities_hotel_id.hotel_name": { $regex: regex } }
                         ]
                     }
@@ -169,9 +175,11 @@ const getAmenities = async (req, res) => {
         if (startDate && endDate) {
             query.amenities_date = { $gte: new Date(startDate), $lte: new Date(endDate) };
         }
-        if (hotelId) {
-            query.amenities_hotel_id = hotelId;
-        }
+        if (hotelId) query.amenities_hotel_id = hotelId;
+        if (year) query.amenities_year = year;
+        if (month) query.amenities_month = month;
+
+
 
         const data = await amenitiesModel.find(query)
             .skip(skip)
@@ -193,8 +201,68 @@ const getAmenities = async (req, res) => {
 };
 
 
+
+const getTotalAmenityPay = async (req, res) => {
+    const { hotelId } = req.body;
+
+    if (!hotelId) {
+        return res.status(400).json({ err: "Please provide hotel" });
+    }
+
+    try {
+        const totalPay = await amenitiesModel.aggregate([
+            {
+                $match: {
+                    amenities_hotel_id: new mongoose.Types.ObjectId(hotelId),
+                    isDel: '0',
+                    amenities_payment_status: '1'
+                }
+            },
+            {
+                $group: {
+                    _id: '$amenities_hotel_id',
+                    totalAmount: { $sum: '$amenities_amount' },
+                    count: { $sum: 1 } // optional: number of records
+                }
+            },
+            {
+                $lookup: {
+                    from: 'hotels',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'hotel'
+                }
+            },
+            { $unwind: '$hotel' },
+            {
+                $project: {
+                    _id: 0,
+                    hotel_id: '$_id',
+                    hotel_name: '$hotel.hotel_name',
+                    totalAmount: 1,
+                    count: 1
+                }
+            }
+        ]);
+
+        console.log(totalPay);
+        if(totalPay.length < 0){
+            return res.status(404).json({err: "No Payment"})
+        }
+
+        return res.status(200).json(totalPay)
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ err: "Something went wrong" });
+    }
+
+}
+
+
 module.exports = {
     addAmenities,
     getAmenities,
-    updateAmenities
+    updateAmenities,
+    getTotalAmenityPay
 }
