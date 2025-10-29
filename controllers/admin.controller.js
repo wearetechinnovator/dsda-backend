@@ -312,7 +312,7 @@ const sendCheckinOTP = async (req, res) => {
     const username = "WBDSDA"; // username of the department
     const password = "Admin12345@"; // password of the department
     const senderid = "WBDSDA"; // sender id of the department
-    const message = `Your OTP for login to the System is ${otp}. This OTP is valid for 60 seconds.Please do not share this OTP with others.`; // message content
+    const message = `Your OTP for login to the System is ${otp}. This OTP is valid for 60 seconds. Please do not share this OTP with others.`; // message content
     const mobileno = mobile; // single number
     const deptSecureKey = "9a6e9fff-02d5-4275-99f8-9992b04e7580"; // department secure key
     const templateid = "1407168381302798926";
@@ -349,7 +349,7 @@ const sendCheckinOTP = async (req, res) => {
     const body = new URLSearchParams(data);
     const agent = new https.Agent({ rejectUnauthorized: false });
     const url = "https://msdgweb.mgov.gov.in/esms/sendsmsrequestDLT";
-
+console.log(body)
     try {
         // const response = await axios.post(url, new URLSearchParams(data), {
         //     headers: {
@@ -366,11 +366,11 @@ const sendCheckinOTP = async (req, res) => {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
-            agent: agent,
+            agent: agent
         });
 
-        console.log("SMS API Response:", response.data);
-        return res.status(200).json(response.data)
+        console.log("SMS API Response:", response);
+        return res.status(200).json(response)
     } catch (error) {
         console.error("Error sending OTP:", error.message);
         return null;
