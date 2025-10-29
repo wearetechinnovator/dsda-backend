@@ -23,7 +23,7 @@ const otherPaymentSchema = new mongoose.Schema({
     other_payment_payment_status: {
         type: String,
         enum: ['0', '1', '2'], // 0=Failed | 1=Success | 2=Processing
-        default: '2'
+        default: '0'
     },
     other_payment_transaction_details: String, //  Payment Gateway Response Details
     other_payment_purpose: String,

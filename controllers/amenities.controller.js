@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const amenitiesModel = require("../models/amenities.model");
 const fetch = require("node-fetch");
+const settingModel = require("../models/setting.model");
 
 
 // USE IN CORN JOB TO SYNC AMENITIES PAYMENT DATA MONTHLY
@@ -33,12 +34,12 @@ const addAmenities = async (req, res) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                start_date: startDate,
-                end_date: endDate
+                startDate,
+                endDate
             })
         })
         const totalAmenities = await req.json();
-
+        
         // Prepare bulk operations
         const bulkOps = totalAmenities.map(item => ({
             updateOne: {
@@ -57,6 +58,16 @@ const addAmenities = async (req, res) => {
         }));
 
         const result = await amenitiesModel.bulkWrite(bulkOps);
+
+
+        // Last bill genaration month and year update
+        await settingModel.updateOne({}, {
+            $set: {
+                bill_generate_last_month: previousMonth,
+                bill_generate_last_year: previousYear
+            }
+        })
+
         return res.send(result)
 
     } catch (error) {
@@ -107,6 +118,7 @@ const getAmenities = async (req, res) => {
     const hotelId = req.body?.hotelId;
     const month = req.body?.month;
     const year = req.body?.year;
+    const payStatus = req.body?.payStatus;
 
 
     try {
@@ -178,6 +190,12 @@ const getAmenities = async (req, res) => {
         if (hotelId) query.amenities_hotel_id = hotelId;
         if (year) query.amenities_year = year;
         if (month) query.amenities_month = month;
+        if (payStatus) {
+            if (payStatus === "1") query.amenities_payment_status = payStatus;
+            if (payStatus !== "1") {
+                query.amenities_payment_status = { $ne: "1" }
+            }
+        }
 
 
 
@@ -201,7 +219,7 @@ const getAmenities = async (req, res) => {
 };
 
 
-
+// Get Hotel wise Total Amenity
 const getTotalAmenityPay = async (req, res) => {
     const { hotelId } = req.body;
 
@@ -245,9 +263,8 @@ const getTotalAmenityPay = async (req, res) => {
             }
         ]);
 
-        console.log(totalPay);
-        if(totalPay.length < 0){
-            return res.status(404).json({err: "No Payment"})
+        if (totalPay.length < 0) {
+            return res.status(404).json({ err: "No Payment" })
         }
 
         return res.status(200).json(totalPay)

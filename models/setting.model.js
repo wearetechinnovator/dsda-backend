@@ -7,6 +7,8 @@ const settingSchema = new mongoose.Schema({
     contact_number: String,
     address: String,
     charges_per_tourist: String,
+    bill_generate_last_month:Number,
+    bill_generate_last_year:Number,
     age_for_charges: {
         type: Number,
         default: 5

@@ -23,7 +23,7 @@ const amenitiesSchema = new mongoose.Schema({
     amenities_payment_status: {
         type: String,
         enum: ['0', '1', '2'], // 0=Failed | 1=Success | 2=Processing
-        default: '2'
+        default: '0'
     },
     amenities_transaction_details: String, //  Payment Gateway Response Details
     amenities_month: String,

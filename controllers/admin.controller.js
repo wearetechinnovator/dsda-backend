@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const https = require('https')
 const fetch = require("node-fetch");
 const hotelModel = require("../models/hotel.model");
+const amenitiesModel = require("../models/amenities.model");
 
 
 
@@ -376,11 +377,12 @@ const sendCheckinOTP = async (req, res) => {
     }
 }
 
+
 // Get statictics data;
 const getStats = async (req, res) => {
     try {
 
-        const [countOfHotels, operativeHotels, totalBeds] = await Promise.all([
+        const [countOfHotels, operativeHotels, totalBeds, totalAmenities] = await Promise.all([
             await hotelModel.countDocuments({ IsDel: '0' }),
             await hotelModel.countDocuments({ hotel_status: "1", IsDel: '0' }),
             await hotelModel.aggregate([
@@ -395,15 +397,33 @@ const getStats = async (req, res) => {
                         }
                     }
                 }
-            ])
-        ]);
+            ]),
 
+            await amenitiesModel.aggregate([
+                {
+                    $match: {
+                        isDel: "0",
+                        amenities_payment_status: "1"
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmenitiesAmount: {
+                            $sum: { $toDouble: "$amenities_amount" }
+                        }
+                    }
+                }
+            ])
+
+        ]);
 
 
         res.status(200).json({
             total_hotel: countOfHotels,
             total_operative_hotel: operativeHotels,
-            total_beds: totalBeds[0]?.totalBedSum || 0
+            total_beds: totalBeds[0]?.totalBedSum || 0,
+            total_amenities_paid: totalAmenities[0]?.totalAmenitiesAmount || 0
         })
 
     } catch (error) {

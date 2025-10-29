@@ -85,11 +85,11 @@ const get = async (req, res) => {
 
 
         const cacheKey = `zone:page=${page}:limit=${limit}`;
-        // const cachedUsers = await redisDB.get(cacheKey);
+        const cachedUsers = await redisDB.get(cacheKey);
 
-        // if (cachedUsers) {
-        //     return res.status(200).json(JSON.parse(cachedUsers));
-        // }
+        if (cachedUsers) {
+            return res.status(200).json(JSON.parse(cachedUsers));
+        }
 
         const data = await zoneModel.find({ isDel: trash ? "1" : "0" })
             .skip(skip).limit(limit).sort({ _id: -1 });
