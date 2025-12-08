@@ -1,4 +1,3 @@
-const connectRedis = require("../db/redis");
 const policeStationModel = require("../models/policeStation.model");
 
 
@@ -70,7 +69,6 @@ const get = async (req, res) => {
     const skip = (page - 1) * limit;
 
     try {
-        const redisDB = await connectRedis();
 
         if (id) {
             const data = await policeStationModel.findOne({ _id: id, isDel: "0" }).populate("district");
@@ -89,20 +87,11 @@ const get = async (req, res) => {
         }
 
 
-        const cacheKey = `policeStation:page=${page}:limit=${limit}`;
-        // const cachedUsers = await redisDB.get(cacheKey);
-
-        // if (cachedUsers) {
-        //     return res.status(200).json(JSON.parse(cachedUsers));
-        // }
-
         const data = await policeStationModel.find({ isDel: trash ? "1" : "0" })
             .skip(skip).limit(limit).sort({ _id: -1 }).populate("district");
         const totalCount = await policeStationModel.countDocuments({ isDel: trash ? "1" : "0" });
 
         const result = { data: data, total: totalCount, page, limit };
-
-        await redisDB.setEx(cacheKey, 5, JSON.stringify(result));
 
         return res.status(200).json(result);
 

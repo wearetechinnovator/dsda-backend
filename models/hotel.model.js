@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 
 const hotelSchema = new mongoose.Schema({
-    hotel_name: String,
+    hotel_name: {
+        type: String,
+        index: true
+    },
     hotel_category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'hotel_categories'
@@ -9,28 +12,23 @@ const hotelSchema = new mongoose.Schema({
     hotel_year_of_establishment: String,
     hotel_zone_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'zone',
-        index: true
+        ref: 'zone'
     },
     hotel_district_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'district',
-        index: true
+        ref: 'district'
     },
     hotel_police_station_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'policestation',
-        index: true
+        ref: 'policestation'
     },
     hotel_sector_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'sector',
-        index: true
+        ref: 'sector'
     },
     hotel_block_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'block',
-        index: true
+        ref: 'block'
     },
     hotel_address: String,
     hotel_email: String,
@@ -93,14 +91,12 @@ const hotelSchema = new mongoose.Schema({
     hotel_status: {
         type: String,
         enum: ['0', '1'], // 0=`Inactive` | 1=`Active`
-        default: '0',
-        index: true
+        default: '0'
     },
     IsDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=`Active` | 1=`Trash` | 2=`Permanent Delete`
-        default: '0',
-        index: true
+        default: '0'
     }
 }, { timestamps: true })
 

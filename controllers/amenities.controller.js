@@ -4,7 +4,7 @@ const fetch = require("node-fetch");
 const settingModel = require("../models/setting.model");
 
 
-// USE IN CORN JOB TO SYNC AMENITIES PAYMENT DATA MONTHLY
+// USE IN CRON JOB TO SYNC AMENITIES PAYMENT DATA MONTHLY
 // =======================================================
 const addAmenities = async (req, res) => {
     try {

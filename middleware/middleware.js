@@ -8,31 +8,35 @@ const middleware = async (req, res, next) => {
     let token;
     let hotelToken;
 
+    // Get normal token
     if (req.method === "POST") {
       token = req.body?.token;
     } else {
       token = req.headers?.authorization?.split(" ")[1];
     }
 
-    if (req.method === "POST" && req.body.hotelToken) {
-      hotelToken = req.body?.hotelToken;
-    }
-    if (req.method === "GET" && req.headers["x-hotel-token"]) {
-      hotelToken = req.headers["x-hotel-token"].split(" ")[1];
+    // Get hotel token
+    if (req.method === "POST" && req.body?.hotelToken) {
+      hotelToken = req.body.hotelToken;
     }
 
-    console.log(req.url, "----", req.method, "----", hotelToken)
+    if (req.method === "GET" && req.headers["x-hotel-token"]) {
+      hotelToken = req.headers["x-hotel-token"];
+    }
+
+    console.log("Token:", token);
+    console.log("Hotel Token:", hotelToken);
 
     if (!token && !hotelToken) {
       console.log("No token found in request");
       return res.status(401).json({ message: "No token provided" });
     }
 
-    // Verify token
     let decoded;
+
     if (token) {
       decoded = jwt.verify(token, JWT_KEY);
-    }
+    } 
     else if (hotelToken) {
       decoded = jwt.verify(hotelToken, HOTEL_JWT_KEY);
     }
@@ -41,10 +45,9 @@ const middleware = async (req, res, next) => {
     next();
 
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
     return res.status(401).json({ message: "Invalid or expired token" });
   }
-
 };
 
 module.exports = middleware;

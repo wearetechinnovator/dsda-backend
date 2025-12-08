@@ -1,4 +1,3 @@
-const connectRedis = require("../db/redis");
 const noticeModel = require("../models/notice.model");
 
 
@@ -79,7 +78,6 @@ const get = async (req, res) => {
     const skip = (page - 1) * limit;
 
     try {
-        const redisDB = await connectRedis();
 
         if (id) {
             const data = await noticeModel.findOne({ _id: id, isDel: "0" });
@@ -98,20 +96,11 @@ const get = async (req, res) => {
         }
 
 
-        const cacheKey = `sector:page=${page}:limit=${limit}`;
-        // const cachedUsers = await redisDB.get(cacheKey);
-
-        // if (cachedUsers) {
-        //     return res.status(200).json(JSON.parse(cachedUsers));
-        // }
-
         const data = await noticeModel.find({ isDel: trash ? "1" : "0" })
             .skip(skip).limit(limit).sort({ _id: -1 });
         const totalCount = await noticeModel.countDocuments({ isDel: trash ? "1" : "0" });
 
         const result = { data: data, total: totalCount, page, limit };
-
-        await redisDB.setEx(cacheKey, 5, JSON.stringify(result));
 
         return res.status(200).json(result);
 

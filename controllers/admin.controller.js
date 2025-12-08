@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const jwtKey = process.env.JWT_KEY;
 const HOTEL_JWT_KEY = process.env.HOTEL_JWT_KEY; 
 const bcryptJs = require("bcryptjs");
-const connectRedis = require("../db/redis");
 const crypto = require("crypto");
 const https = require('https')
 const fetch = require("node-fetch");
@@ -204,13 +203,8 @@ const get = async (req, res) => {
     const skip = (page - 1) * limit;
 
     try {
-        const redisDB = await connectRedis();
 
         if (userId) {
-            const cachedUser = await redisDB.get(`user:${userId}`);
-            // if (cachedUser) {
-            //     return res.status(200).json(JSON.parse(cachedUser));
-            // }
 
             const userData = await adminModel.findOne(
                 { _id: userId },
@@ -221,8 +215,6 @@ const get = async (req, res) => {
                 return res.status(404).json({ err: 'No user found' });
             }
 
-            await redisDB.setEx(`user:${userId}`, 120, JSON.stringify(userData));
-
             return res.status(200).json(userData);
         }
 
@@ -232,14 +224,7 @@ const get = async (req, res) => {
 
             return res.status(200).json(data);
         }
-
-
-        const cacheKey = `users:page=${page}:limit=${limit}`;
-        // const cachedUsers = await redisDB.get(cacheKey);
-
-        // if (cachedUsers) {
-        //     return res.status(200).json(JSON.parse(cachedUsers));
-        // }
+     
 
         const users = await adminModel
             .find({ isDel: trash ? "1" : "0" }, { password: 0 })
@@ -250,8 +235,6 @@ const get = async (req, res) => {
         const totalCount = await adminModel.countDocuments({ isDel: trash ? "1" : "0" });
 
         const result = { data: users, total: totalCount, page, limit };
-
-        await redisDB.setEx(cacheKey, 120, JSON.stringify(result));
 
         return res.status(200).json(result);
 

@@ -1,4 +1,3 @@
-const connectRedis = require("../db/redis");
 const districtModel = require("../models/district.model");
 
 
@@ -66,7 +65,6 @@ const get = async (req, res) => {
     const skip = (page - 1) * limit;
 
     try {
-        const redisDB = await connectRedis();
 
         if (id) {
             const data = await districtModel.findOne({ _id: id, isDel: "0" });
@@ -85,13 +83,6 @@ const get = async (req, res) => {
         }
 
 
-        const cacheKey = `district:page=${page}:limit=${limit}:trash${trash ? true : false}`;
-        // const cachedUsers = await redisDB.get(cacheKey);
-
-        // if (cachedUsers) {
-        //     return res.status(200).json(JSON.parse(cachedUsers));
-        // }
-
         const data = await districtModel.find({ isDel: trash ? "1" : "0" })
             .skip(skip)
             .limit(limit)
@@ -99,8 +90,6 @@ const get = async (req, res) => {
         const totalCount = await districtModel.countDocuments({ isDel: trash ? "1" : "0" });
 
         const result = { data: data, total: totalCount, page, limit };
-
-        await redisDB.setEx(cacheKey, 5, JSON.stringify(result));
 
         return res.status(200).json(result);
 

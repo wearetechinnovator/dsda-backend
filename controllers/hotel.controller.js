@@ -1,6 +1,5 @@
 const fetch = require("node-fetch");
 const hotelModel = require("../models/hotel.model");
-const connectRedis = require("../db/redis");
 const jwt = require('jsonwebtoken');
 const tripleSHA1 = require("../helper/sha1_hash");
 const amenitiesModel = require("../models/amenities.model");
@@ -249,7 +248,6 @@ const get = async (req, res) => {
 
 
   try {
-    const redisDB = await connectRedis();
 
     if (id) {
       const data = await hotelModel.findOne({ _id: id, IsDel: "0" })
@@ -468,8 +466,6 @@ const get = async (req, res) => {
 
 
     const result = { data: data, total: totalCount, page, limit };
-
-    await redisDB.setEx(cacheKey, 5, JSON.stringify(result));
 
     return res.status(200).json(result);
 

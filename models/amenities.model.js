@@ -27,24 +27,20 @@ const amenitiesSchema = new mongoose.Schema({
     amenities_payment_status: {
         type: String,
         enum: ['0', '1', '2'], // 0=Failed | 1=Success | 2=Processing
-        default: '0',
-        index: true
+        default: '0'
     },
     amenities_transaction_details: String, //  Payment Gateway Response Details
     amenities_month: {
-        type: String,
-        index: true
+        type: String
     },
     amenities_year: {
-        type: String,
-        index: true
+        type: String
     },
     amenities_receipt_number: String,
     isDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=Active | 1=Trash | 2=Permanent Delete
-        default: '0',
-        index: true
+        default: '0'
     }
 }, { timestamps: true });
 
