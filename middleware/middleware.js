@@ -21,7 +21,7 @@ const middleware = async (req, res, next) => {
     }
 
     if (req.method === "GET" && req.headers["x-hotel-token"]) {
-      hotelToken = req.headers["x-hotel-token"];
+      hotelToken = req.headers["x-hotel-token"].split(" ")[1];
     }
 
     console.log("Token:", token);
