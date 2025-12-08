@@ -5,18 +5,19 @@ const jwt = require('jsonwebtoken');
 const tripleSHA1 = require("../helper/sha1_hash");
 const amenitiesModel = require("../models/amenities.model");
 const jwtKey = process.env.JWT_KEY;
+const HOTEL_JWT_KEY = process.env.HOTEL_JWT_KEY;
 const bookingApi = process.env.BOOKING_API;
 
 
 const login = async (req, res) => {
-  const { username, password, adminToken } = req.body;
+  const { username, password, token } = req.body;
 
-  if (adminToken) {
+  if (token) {
     if (!username) {
       return res.status(400).json({ err: 'Please fill the requires' })
     }
 
-    const decoded = jwt.verify(adminToken, jwtKey);
+    const decoded = jwt.verify(token, jwtKey);
     if (!decoded) {
       return res.status(401).json({ err: 'Invalid admin token' });
     }
@@ -42,7 +43,7 @@ const login = async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ id: hotel._id }, jwtKey);
+    const token = jwt.sign({ id: hotel._id }, HOTEL_JWT_KEY);
     return res.status(200).json({ hotel, token });
 
   } catch (error) {
@@ -233,15 +234,18 @@ const get = async (req, res) => {
   const search = req.body?.search?.trim();
   const trash = req.body?.trash;
   const skip = (page - 1) * limit;
-  const isEnrolled = req.body?.enrolled;
   const zone = req.body?.zone;
   const sector = req.body?.sector;
   const block = req.body?.block;
   const district = req.body?.district;
   const policeStation = req.body?.policeStation;
   const hotelId = req.body?.id;
+  const isEnrolled = req.body?.enrolled;
   const isOccupied = req.body?.occupied;
   const hotelStatus = req.body?.hotelStatus;
+
+  // for bed availablity page;
+  const bedStatus = req.body.bedStatus;
 
 
   try {
@@ -322,6 +326,7 @@ const get = async (req, res) => {
         return res.status(500).json({ err: "Internal Server Error" });
       }
     }
+    // All close here
 
 
 
@@ -381,11 +386,7 @@ const get = async (req, res) => {
 
 
     const cacheKey = `hotel:page=${page}:limit=${limit}`;
-    // const cachedUsers = await redisDB.get(cacheKey);
 
-    // if (cachedUsers) {
-    //     return res.status(200).json(JSON.parse(cachedUsers));
-    // }
 
     let query = { IsDel: trash ? "1" : "0" };
 
@@ -443,11 +444,25 @@ const get = async (req, res) => {
           body: JSON.stringify({ hotelId: d._id, occupied: true })
         });
         const enData = await getEnrolled.json();
-
         d['hotel_total_occupied'] = enData?.occupied;
-        result.push(d);
+
+        const occupied = d.hotel_total_occupied;
+        const vacant = d.hotel_total_bed - occupied;
+
+        if (bedStatus && bedStatus !== "all") {
+          if (bedStatus === "occupied" && occupied > 0) {
+            result.push(d);
+          } else if (bedStatus === "vacant"  && vacant > 0) {
+            result.push(d);
+          } else if (bedStatus === "extra" && vacant < 0) {
+            result.push(d);
+          }
+        } else {
+          result.push(d);
+        }
 
       }
+
       return res.status(200).json({ data: result, total: totalCount, page, limit });
     }
 

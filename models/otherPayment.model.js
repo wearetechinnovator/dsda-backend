@@ -4,7 +4,8 @@ const mongoose = require("mongoose");
 const otherPaymentSchema = new mongoose.Schema({
     other_payment_hotel_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "hotel"
+        ref: "hotel",
+        index: true
     },
     other_payment_amount: Number,
     other_payment_payment_date: String,
@@ -23,7 +24,8 @@ const otherPaymentSchema = new mongoose.Schema({
     other_payment_payment_status: {
         type: String,
         enum: ['0', '1', '2'], // 0=Failed | 1=Success | 2=Processing
-        default: '0'
+        default: '0',
+        index: true
     },
     other_payment_transaction_details: String, //  Payment Gateway Response Details
     other_payment_purpose: String,
@@ -31,7 +33,8 @@ const otherPaymentSchema = new mongoose.Schema({
     isDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=Active | 1=Trash | 2=Permanent Delete
-        default: '0'
+        default: '0',
+        index: true
     }
 }, { timestamps: true });
 

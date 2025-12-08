@@ -1,26 +1,31 @@
-const { create, get, update, deleteRecord, restore, login, changePassword } = require("../controllers/hotel.controller");
+const {
+    create, get, update, deleteRecord,
+    restore, login, changePassword
+} = require("../controllers/hotel.controller");
 const router = require("express").Router();
+const middleware = require("../middleware/middleware");
+
 
 
 router
     .route("/create")
-    .post(create);
+    .post(middleware, create);
 
 router
     .route("/update")
-    .post(update);
+    .post(middleware, update);
 
 router
     .route("/get")
-    .post(get);
+    .post(middleware, get);
 
 router
     .route("/delete")
-    .post(deleteRecord);
+    .post(middleware, deleteRecord);
 
 router
     .route("/restore")
-    .post(restore);
+    .post(middleware, restore);
 
 router
     .route("/login")
@@ -29,7 +34,7 @@ router
 
 router
     .route("/change-password")
-    .post(changePassword);
+    .post(middleware, changePassword);
 
 
 module.exports = router;

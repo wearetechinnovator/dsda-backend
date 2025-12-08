@@ -6,32 +6,32 @@ const {
     restorePayment
 } = require("../controllers/otherPayment.controller");
 const router = require("express").Router();
-
+const middleware = require("../middleware/middleware");
 
 
 router
     .route("/add-payment")
-    .post(addPayment);
+    .post(middleware, addPayment);
 
 
 router
     .route("/update-payment")
-    .post(updatePayment);
+    .post(middleware, updatePayment);
 
 
 router
     .route("/get-payment")
-    .post(getPayment);
+    .post(middleware, getPayment);
 
 
 router
     .route("/delete")
-    .post(deletePayment);
+    .post(middleware, deletePayment);
 
 
 router
     .route("/restore")
-    .post(restorePayment);
+    .post(middleware, restorePayment);
 
 
 

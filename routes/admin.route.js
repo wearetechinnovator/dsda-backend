@@ -7,6 +7,7 @@ const {
     sendCheckinOTP,
     getStats
 } = require("../controllers/admin.controller");
+const middleware = require("../middleware/middleware");
 
 
 
@@ -16,28 +17,28 @@ router
 
 router
     .route("/create-users")
-    .post(create);
+    .post(middleware, create);
 
 router
     .route("/update-users")
-    .post(update);
+    .post(middleware, update);
     
 router
     .route("/change-password")
-    .post(changePass);
+    .post(middleware, changePass);
 
 
 router
     .route("/get-users")
-    .post(get);
+    .post(middleware, get);
 
 router
     .route("/delete")
-    .post(deleteRecord);
+    .post(middleware, deleteRecord);
 
 router
     .route("/restore")
-    .post(restore);
+    .post(middleware, restore);
 
 
 router
@@ -50,6 +51,8 @@ router
 
 router
     .route("/statictics")
-    .post(getStats);
+    .post(middleware, getStats);
 
+
+    
 module.exports = router;

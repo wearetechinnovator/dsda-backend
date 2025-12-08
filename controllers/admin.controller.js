@@ -1,6 +1,7 @@
 const adminModel = require("../models/admin.model");
 const jwt = require("jsonwebtoken");
 const jwtKey = process.env.JWT_KEY;
+const HOTEL_JWT_KEY = process.env.HOTEL_JWT_KEY; 
 const bcryptJs = require("bcryptjs");
 const connectRedis = require("../db/redis");
 const crypto = require("crypto");
@@ -8,6 +9,7 @@ const https = require('https')
 const fetch = require("node-fetch");
 const hotelModel = require("../models/hotel.model");
 const amenitiesModel = require("../models/amenities.model");
+
 
 
 
@@ -25,7 +27,7 @@ const login = async (req, res) => {
         }
 
         // Check password;
-        const checkPass = await bcryptJs.compare(pass, admin.password);
+        const checkPass = bcryptJs.compare(pass, admin.password);
         if (!checkPass) {
             return res.status(401).json({ err: 'Incorrect email or password' })
         }
@@ -60,13 +62,19 @@ const login = async (req, res) => {
 
 
 const checkToken = async (req, res) => {
-    const { token } = req.body;
-    if (!token) {
+    const { token, hotelToken } = req.body;
+
+    if (!token && !hotelToken) {
         return res.status(400).json({ err: "token required" })
     }
 
     try {
-        const decode = jwt.verify(token, jwtKey)
+        let decode;
+        if (token) {
+            decode = jwt.verify(token, jwtKey);
+        }else{
+            decode = jwt.verify(hotelToken, HOTEL_JWT_KEY);
+        }
 
         if (!decode) {
             return res.status(401).json({ err: "Invalid token" });
@@ -118,6 +126,7 @@ const create = async (req, res) => {
 
 }
 
+
 const changePass = async (req, res) => {
     const { userId, currentPassword, newPassword } = req.body;
 
@@ -147,6 +156,7 @@ const changePass = async (req, res) => {
         return res.status(500).json({ err: "Something went wrong" });
     }
 }
+
 
 const update = async (req, res) => {
     const { userId, name, password, role,
@@ -278,6 +288,7 @@ const deleteRecord = async (req, res) => {
 
 };
 
+
 const restore = async (req, res) => {
     const { ids } = req.body;
 
@@ -310,9 +321,9 @@ const sendCheckinOTP = async (req, res) => {
 
     // --- MOBILE SMS OTP CODE (JavaScript version) ---
     const username = "WBDSDA"; // username of the department
-    const password = "Admin12345@"; // password of the department
+    const password = "Admin#123"; // password of the department
     const senderid = "WBDSDA"; // sender id of the department
-    const message = `Your OTP for login to the System is ${otp}. This OTP is valid for 60 seconds. Please do not share this OTP with others.`; // message content
+    const message = `Your OTP for login to the System is ${otp}. This OTP is valid for 60 seconds.Please do not share this OTP with others.`; // message content
     const mobileno = mobile; // single number
     const deptSecureKey = "9a6e9fff-02d5-4275-99f8-9992b04e7580"; // department secure key
     const templateid = "1407168381302798926";
@@ -346,19 +357,13 @@ const sendCheckinOTP = async (req, res) => {
         key: key.trim(),
         templateid: templateid.trim(),
     };
+
+    console.log(data)
     const body = new URLSearchParams(data);
     const agent = new https.Agent({ rejectUnauthorized: false });
     const url = "https://msdgweb.mgov.gov.in/esms/sendsmsrequestDLT";
-console.log(body)
+
     try {
-        // const response = await axios.post(url, new URLSearchParams(data), {
-        //     headers: {
-        //         "Content-Type": "application/x-www-form-urlencoded",
-        //     },
-        //     httpsAgent: new (await import("https")).Agent({
-        //         rejectUnauthorized: false, // equivalent to CURLOPT_SSL_VERIFYPEER = false
-        //     }),
-        // });
 
         const response = await fetch(url, {
             method: "POST",
@@ -369,7 +374,7 @@ console.log(body)
             agent: agent
         });
 
-        console.log("SMS API Response:", response);
+
         return res.status(200).json(response)
     } catch (error) {
         console.error("Error sending OTP:", error.message);

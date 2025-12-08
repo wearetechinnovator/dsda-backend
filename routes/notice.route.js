@@ -3,32 +3,32 @@ const { update, get,
     deleteRecord, restore,
     getHotelNotice, create
 } = require('../controllers/notice.controller');
-
+const middleware = require("../middleware/middleware");
 
 
 router
     .route("/create")
-    .post(create);
+    .post(middleware, create);
 
 router
     .route("/update")
-    .post(update);
+    .post(middleware, update);
 
 router
     .route("/get")
-    .post(get);
+    .post(middleware, get);
 
 router
     .route("/get-hotel-notice")
-    .post(getHotelNotice);
+    .post(middleware, getHotelNotice);
 
 router
     .route("/delete")
-    .post(deleteRecord);
+    .post(middleware, deleteRecord);
 
 router
     .route("/restore")
-    .post(restore);
+    .post(middleware, restore);
 
 
 

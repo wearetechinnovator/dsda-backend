@@ -5,26 +5,28 @@ const {
     updateAmenities,
     getTotalAmenityPay
 } = require("../controllers/amenities.controller");
+const middleware = require("../middleware/middleware");
 
 
 
 router
     .route("/amenities-sync")
-    .post(addAmenities);
+    .post(middleware, addAmenities);
 
 
 router
     .route("/get-amenities")
-    .post(getAmenities);
+    .post(middleware, getAmenities);
 
 
 router
     .route("/update-amenities")
-    .post(updateAmenities);
+    .post(middleware, updateAmenities);
 
+    
 router
     .route("/get-total-amenities-pay")
-    .post(getTotalAmenityPay);
+    .post(middleware, getTotalAmenityPay);
 
 
     

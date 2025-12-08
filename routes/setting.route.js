@@ -1,19 +1,19 @@
 const { update, get, create } = require("../controllers/setting.controller");
 const router = require("express").Router();
-
+const middleware = require("../middleware/middleware");
 
 
 router
     .route("/create")
-    .post(create);
+    .post(middleware, create);
 
 router
     .route("/update")
-    .post(update);
+    .post(middleware, update);
 
 router
     .route("/get")
-    .post(get);
+    .post(middleware, get);
 
 
 

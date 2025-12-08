@@ -4,9 +4,9 @@ const otherPaymentModel = require("../models/otherPayment.model");
 
 
 const addPayment = async (req, res) => {
-    const { hotel, purpose, amount, refId, paymentDate, status } = req.body;
+    const { hotel, purpose, amount, transactionId, paymentDate, status, receiptNo } = req.body;
 
-    if ([hotel, purpose, amount, refId, paymentDate, status].some(field => !field || field === "")) {
+    if ([hotel, purpose, amount, transactionId, paymentDate, status].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 
@@ -15,9 +15,11 @@ const addPayment = async (req, res) => {
             other_payment_hotel_id: hotel,
             other_payment_amount: amount,
             other_payment_purpose: purpose,
-            other_payment_payment_ref_no: refId,
+            other_payment_payment_transaction_id: transactionId,
+            other_payment_receipt_number: receiptNo,
             other_payment_payment_date: paymentDate,
-            other_payment_payment_status: status
+            other_payment_payment_status: status === "ni" ? '0' : status,
+            other_payment_payment_init: status === "ni" ? '0' : '1',
         });
 
         if (!insert) {
@@ -34,9 +36,9 @@ const addPayment = async (req, res) => {
 
 
 const updatePayment = async (req, res) => {
-    const { hotel, purpose, amount, refId, paymentDate, status, id } = req.body;
+    const { hotel, purpose, amount, transactionId, paymentDate, status, id, receiptNo} = req.body;
 
-    if ([hotel, purpose, amount, refId, paymentDate, status, id].some(field => !field || field === "")) {
+    if ([hotel, purpose, amount, transactionId, paymentDate, status, id].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 
@@ -47,9 +49,11 @@ const updatePayment = async (req, res) => {
                 other_payment_hotel_id: hotel,
                 other_payment_amount: amount,
                 other_payment_purpose: purpose,
-                other_payment_payment_ref_no: refId,
+                other_payment_payment_transaction_id: transactionId,
+                other_payment_receipt_number: receiptNo,
                 other_payment_payment_date: paymentDate,
-                other_payment_payment_status: status
+                other_payment_payment_status: status === "ni" ? '0' : status,
+                other_payment_payment_init: status === "ni" ? '0' : '1',
             }
         })
 

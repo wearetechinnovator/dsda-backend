@@ -39,7 +39,7 @@ const addAmenities = async (req, res) => {
             })
         })
         const totalAmenities = await req.json();
-        
+
         // Prepare bulk operations
         const bulkOps = totalAmenities.map(item => ({
             updateOne: {
@@ -88,9 +88,9 @@ const updateAmenities = async (req, res) => {
         const data = await amenitiesModel.findByIdAndUpdate(id, {
             amenities_payment_mode: mode,
             amenities_payment_transaction_id: transactionId,
-            amenities_payment_status: status,
             amenities_receipt_number: receiptNo,
-            amenities_payment_init: '1'
+            amenities_payment_status: status === "ni" ? '0' : status,
+            amenities_payment_init: status === "ni" ? '0' : '1',
         }, { new: true });
 
         if (!data) {
@@ -275,6 +275,9 @@ const getTotalAmenityPay = async (req, res) => {
     }
 
 }
+
+
+
 
 
 module.exports = {

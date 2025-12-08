@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const hotelSchema = new mongoose.Schema({
-    hotel_id: String,
     hotel_name: String,
     hotel_category: {
         type: mongoose.Schema.Types.ObjectId,
@@ -10,23 +9,28 @@ const hotelSchema = new mongoose.Schema({
     hotel_year_of_establishment: String,
     hotel_zone_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'zone'
+        ref: 'zone',
+        index: true
     },
     hotel_district_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'district'
+        ref: 'district',
+        index: true
     },
     hotel_police_station_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'policestation'
+        ref: 'policestation',
+        index: true
     },
     hotel_sector_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'sector'
+        ref: 'sector',
+        index: true
     },
     hotel_block_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'block'
+        ref: 'block',
+        index: true
     },
     hotel_address: String,
     hotel_email: String,
@@ -89,12 +93,14 @@ const hotelSchema = new mongoose.Schema({
     hotel_status: {
         type: String,
         enum: ['0', '1'], // 0=`Inactive` | 1=`Active`
-        default: '0'
+        default: '0',
+        index: true
     },
     IsDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=`Active` | 1=`Trash` | 2=`Permanent Delete`
-        default: '0'
+        default: '0',
+        index: true
     }
 }, { timestamps: true })
 
