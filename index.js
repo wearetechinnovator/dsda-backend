@@ -6,6 +6,8 @@ const connection = require("./db/connection");
 const cors = require("cors");
 const compression = require("compression");
 const router = require("./routes/index.route");
+const { amenityCron } = require('./helper/cronJob')
+
 
 
 // app.use(cors({
@@ -48,6 +50,8 @@ app.use("/master/api/v1", router);
 // DB connection...
 connection().then(con => {
     if (con) {
+        amenityCron(); //Amenity CRON;
+
         app.listen(PORT, () => {
             console.log("[*] Server running on " + PORT);
         })

@@ -14,9 +14,6 @@ const documentTypeModel = require("../models/documentType.model");
 const roomTypeModel = require("../models/roomType.model");
 const idCardTypeModel = require("../models/roomType.model");
 const hotelCategory = require("../models/hotelCategory.model");
-const stateModel = require("../models/state.model");
-const countryModel = require("../models/country.model");
-const cityModel = require("../models/city.model");
 
 
 const get = async (req, res) => {
@@ -32,12 +29,6 @@ const get = async (req, res) => {
         model = documentTypeModel;
     } else if (which === "hotel-category") {
         model = hotelCategory;
-    } else if (which === "country") {
-        model = countryModel;
-    } else if (which === "state") {
-        model = stateModel;
-    } else if (which === "city") {
-        model = cityModel;
     }
     else {
         return res.status(401).json({ err: "Invalid type" });

@@ -24,11 +24,7 @@ const middleware = async (req, res, next) => {
       hotelToken = req.headers["x-hotel-token"].split(" ")[1];
     }
 
-    console.log("Token:", token);
-    console.log("Hotel Token:", hotelToken);
-
     if (!token && !hotelToken) {
-      console.log("No token found in request");
       return res.status(401).json({ message: "No token provided" });
     }
 

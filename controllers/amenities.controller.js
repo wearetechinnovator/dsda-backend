@@ -68,7 +68,7 @@ const addAmenities = async (req, res) => {
             }
         })
 
-        return res.send(result)
+        // return res.send(result)
 
     } catch (error) {
         console.error(error);
