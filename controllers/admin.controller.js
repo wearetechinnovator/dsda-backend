@@ -341,7 +341,6 @@ const sendCheckinOTP = async (req, res) => {
         templateid: templateid.trim(),
     };
 
-    console.log(data)
     const body = new URLSearchParams(data);
     const agent = new https.Agent({ rejectUnauthorized: false });
     const url = "https://msdgweb.mgov.gov.in/esms/sendsmsrequestDLT";
