@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const settingModel = require('../models/setting.model');
 const { addAmenities } = require('../controllers/amenities.controller');
+const fetch = require("node-fetch");
 
 
 
@@ -10,14 +11,28 @@ const amenityCron = async () => {
 
     cron.schedule(`0 12 ${date} * *`, () => {
         addAmenities();
-        console.log('running a task');
     });
-
 }
 
 
 
+const autoChekoutCron = async () => {
+    cron.schedule("15 * * * *", async () => {
+        try {
+            const url = process.env.BOOKING_API + "/check-out/auto-checkout";
+            const req = await fetch(url, { method: 'POST' });
+            const res = await req.json();
+            console.log(res);
+
+        } catch (error) {
+            console.log(error)
+        }
+    })
+}
+
+
 
 module.exports = {
-    amenityCron
+    amenityCron,
+    autoChekoutCron
 }

@@ -9,6 +9,7 @@ const middleware = require("../middleware/middleware");
 
 
 
+// testing purpose only this route;
 router
     .route("/amenities-sync")
     .post(middleware, addAmenities);
