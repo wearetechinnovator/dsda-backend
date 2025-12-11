@@ -242,6 +242,7 @@ const get = async (req, res) => {
   const isEnrolled = req.body?.enrolled;
   const isOccupied = req.body?.occupied;
   const hotelStatus = req.body?.hotelStatus;
+  const token = req.body?.token;
 
   // for bed availablity page;
   const bedStatus = req.body.bedStatus;
@@ -327,7 +328,6 @@ const get = async (req, res) => {
     // All close here
 
 
-
     if (search) {
       const regex = new RegExp(search, "i");
       const data = await hotelModel.find({ IsDel: "0", hotel_name: regex })
@@ -358,6 +358,7 @@ const get = async (req, res) => {
         return res.status(200).json(result);
       }
 
+
       if (isOccupied) {
         const result = [];
 
@@ -366,7 +367,7 @@ const get = async (req, res) => {
           const getEnrolled = await fetch(bookingApi + "/check-in/get-stats", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ hotelId: d._id, occupied: true })
+            body: JSON.stringify({ hotelId: d._id, occupied: true, token })
           });
           const enData = await getEnrolled.json();
 
@@ -380,10 +381,6 @@ const get = async (req, res) => {
       return res.status(200).json(data);
     }
     // Search Close here.
-
-
-
-    const cacheKey = `hotel:page=${page}:limit=${limit}`;
 
 
     let query = { IsDel: trash ? "1" : "0" };
@@ -417,7 +414,7 @@ const get = async (req, res) => {
         const getEnrolled = await fetch(bookingApi + "/check-in/get-booking", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ hotelId: d._id, enrolled: true })
+          body: JSON.stringify({ hotelId: d._id, enrolled: true, token })
         });
 
         const enData = await getEnrolled.json();
@@ -439,7 +436,7 @@ const get = async (req, res) => {
         const getEnrolled = await fetch(bookingApi + "/check-in/get-stats", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ hotelId: d._id, occupied: true })
+          body: JSON.stringify({ hotelId: d._id, occupied: true, token })
         });
         const enData = await getEnrolled.json();
         d['hotel_total_occupied'] = enData?.occupied;
@@ -450,7 +447,7 @@ const get = async (req, res) => {
         if (bedStatus && bedStatus !== "all") {
           if (bedStatus === "occupied" && occupied > 0) {
             result.push(d);
-          } else if (bedStatus === "vacant"  && vacant > 0) {
+          } else if (bedStatus === "vacant" && vacant > 0) {
             result.push(d);
           } else if (bedStatus === "extra" && vacant < 0) {
             result.push(d);
