@@ -8,6 +8,8 @@ const HOTEL_JWT_KEY = process.env.HOTEL_JWT_KEY;
 const bookingApi = process.env.BOOKING_API;
 
 
+
+
 const login = async (req, res) => {
   const { username, password, token } = req.body;
 
@@ -156,58 +158,65 @@ const update = async (req, res) => {
     return res.status(409).json({ err: "Username already exists" });
   }
 
-  // Hash Password;
-  const hashPassword = tripleSHA1(password, 3);
+
+  let updateData = {
+    hotel_name: name,
+    hotel_category: category,
+    hotel_zone_id: zone,
+    hotel_sector_id: sector,
+    hotel_block_id: block,
+    hotel_police_station_id: policeStation,
+    hotel_district_id: district,
+    hotel_address: address,
+    hotel_email: email,
+    hotel_year_of_establishment: establishment,
+    hotel_minimum_rate: miniumRate,
+    hotel_maximum_rate: maximumRate,
+    hotel_website: website,
+    hotel_gmb: gmbUrl,
+    hotel_distance_from_main_road: distanceFromRoad,
+    hotel_distance_from_sea_beach: distanceFromSeaBeach,
+    hotel_has_ac: ac || "0",
+    hotel_has_swimming_pool: swimmingPool,
+    hotel_has_restaurant: restaurantAvailable || "0",
+    hotel_has_conference_hall: conferanceHallAvailable || "0",
+    hotel_has_parking: parkingAvailable || "0",
+    hotel_username: username,
+    hotel_reception_phone: receptionPhone,
+    hotel_proprietor_name: proprietorName,
+    hotel_proprietor_phone: proprietorPhone,
+    hotel_manager_name: managerName,
+    hotel_manager_phone: managerPhone,
+    hotel_manager_phone_alternative: alternateManagerPhone,
+    hotel_status: status || "1",
+    hotel_1_bed_room: oneBed,
+    hotel_2_bed_room: twoBed,
+    hotel_3_bed_room: threeBed,
+    hotel_4_bed_room: fourBed,
+    hotel_5_bed_room: fiveBed,
+    hotel_6_bed_room: sixBed,
+    hotel_7_bed_room: sevenBed,
+    hotel_8_bed_room: eightBed,
+    hotel_9_bed_room: nineBed,
+    hotel_10_bed_room: tenBed,
+    hotel_total_bed: totalBed,
+    hotel_total_room: totalRoom,
+    hotel_gallery_image: photoGallery,
+    hotel_document: documentData,
+    hotel_room_type: roomTypeData
+  };
+
+  if (password && password.trim() !== "") {
+    // Hash Password;
+    const hashPassword = tripleSHA1(password, 3);
+    updateData.hotel_password = hashPassword;
+  }
 
   // Update Hotel
   try {
     const result = await hotelModel.updateOne({ _id: id }, {
       $set: {
-        hotel_name: name,
-        hotel_category: category,
-        hotel_zone_id: zone,
-        hotel_sector_id: sector,
-        hotel_block_id: block,
-        hotel_police_station_id: policeStation,
-        hotel_district_id: district,
-        hotel_address: address,
-        hotel_email: email,
-        hotel_year_of_establishment: establishment,
-        hotel_minimum_rate: miniumRate,
-        hotel_maximum_rate: maximumRate,
-        hotel_website: website,
-        hotel_gmb: gmbUrl,
-        hotel_distance_from_main_road: distanceFromRoad,
-        hotel_distance_from_sea_beach: distanceFromSeaBeach,
-        hotel_has_ac: ac || "0",
-        hotel_has_swimming_pool: swimmingPool,
-        hotel_has_restaurant: restaurantAvailable || "0",
-        hotel_has_conference_hall: conferanceHallAvailable || "0",
-        hotel_has_parking: parkingAvailable || "0",
-        hotel_username: username,
-        hotel_password: hashPassword,
-        hotel_reception_phone: receptionPhone,
-        hotel_proprietor_name: proprietorName,
-        hotel_proprietor_phone: proprietorPhone,
-        hotel_manager_name: managerName,
-        hotel_manager_phone: managerPhone,
-        hotel_manager_phone_alternative: alternateManagerPhone,
-        hotel_status: status || "1",
-        hotel_1_bed_room: oneBed,
-        hotel_2_bed_room: twoBed,
-        hotel_3_bed_room: threeBed,
-        hotel_4_bed_room: fourBed,
-        hotel_5_bed_room: fiveBed,
-        hotel_6_bed_room: sixBed,
-        hotel_7_bed_room: sevenBed,
-        hotel_8_bed_room: eightBed,
-        hotel_9_bed_room: nineBed,
-        hotel_10_bed_room: tenBed,
-        hotel_total_bed: totalBed,
-        hotel_total_room: totalRoom,
-        hotel_gallery_image: photoGallery,
-        hotel_document: documentData,
-        hotel_room_type: roomTypeData
+        updateData
       }
     })
 
@@ -251,7 +260,7 @@ const get = async (req, res) => {
   try {
 
     if (id) {
-      const data = await hotelModel.findOne({ _id: id, IsDel: "0" })
+      const data = await hotelModel.findOne({ _id: id, IsDel: "0" }, {hotel_password: 0})
         .populate('hotel_sector_id')
         .populate('hotel_block_id')
         .populate('hotel_zone_id')

@@ -7,7 +7,7 @@ const fetch = require("node-fetch");
 
 const amenityCron = async () => {
     const settings = await settingModel.findOne({}, { payment_start_date: 1 });
-    const date = parseInt(settings.payment_start_date) - 1;
+    const date = parseInt(settings?.payment_start_date) - 1;
 
     cron.schedule(`0 12 ${date} * *`, () => {
         addAmenities();
