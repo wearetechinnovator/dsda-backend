@@ -12,7 +12,8 @@ const notieRoute = require("./notice.route");
 const amenitiesRoute = require("./amenities.route");
 const otherPaymentRoute = require('./otherPayment.route');
 const payGatewayRoute = require('./payGateway.route');
-
+const roomTypeRoute = require("./roomType.route");
+const hotelCategoryRoute = require("./hotelCategory.route");
 
 
 
@@ -20,6 +21,8 @@ router.use("/admin", adminRoute);
 router.use("/district", districtRoute);
 router.use("/block", blockRoute);
 router.use("/zone", zoneRoute);
+router.use("/room-type", roomTypeRoute);
+router.use("/hotel-category", hotelCategoryRoute);
 router.use("/sector", sectorRoute);
 router.use("/police-station", policeStationRoute);
 router.use("/site-setting", settingRoute);

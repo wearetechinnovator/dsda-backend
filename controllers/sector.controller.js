@@ -12,13 +12,13 @@ const create = async (req, res) => {
         // Check existence;
         const exist = await sectorModel.findOne({ name });
         if (exist) {
-            return res.status(409).json({ err: 'Block already exists' })
+            return res.status(409).json({ err: 'Sector already exists' })
         }
 
         const insert = await sectorModel.create({ name, details });
 
         if (!insert) {
-            return res.status(401).json({ err: 'Block creation failed' })
+            return res.status(401).json({ err: 'Sector creation failed' })
         }
 
         return res.status(200).json(insert);

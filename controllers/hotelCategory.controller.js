@@ -1,8 +1,8 @@
-const zoneModel = require("../models/zone.model");
+const hotelCategoryModel = require("../models/hotelCategory.model");
 
 
 const create = async (req, res) => {
-    const { name, details } = req.body;
+    const { name } = req.body;
 
     if ([name].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
@@ -10,15 +10,15 @@ const create = async (req, res) => {
 
     try {
         // Check existence;
-        const exist = await zoneModel.findOne({ name });
+        const exist = await hotelCategoryModel.findOne({ hotel_category_name: name });
         if (exist) {
-            return res.status(409).json({ err: 'Zone already exists' })
+            return res.status(409).json({ err: 'Hotel Category already exists' })
         }
 
-        const insert = await zoneModel.create({ name, details });
+        const insert = await hotelCategoryModel.create({ hotel_category_name: name });
 
         if (!insert) {
-            return res.status(401).json({ err: 'Zone creation failed' })
+            return res.status(401).json({ err: 'Hotel Category creation failed' })
         }
 
         return res.status(200).json(insert);
@@ -32,7 +32,7 @@ const create = async (req, res) => {
 
 
 const update = async (req, res) => {
-    const { name, details, id } = req.body;
+    const { name, id } = req.body;
 
     if ([name, id].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
@@ -40,7 +40,11 @@ const update = async (req, res) => {
 
     try {
 
-        const result = await zoneModel.updateOne({ _id: id }, { $set: { name, details } })
+        const result = await hotelCategoryModel.updateOne({ _id: id }, {
+            $set: {
+                hotel_category_name: name
+            }
+        })
 
         if (result.modifiedCount === 0) {
             return res.status(304).json({ msg: 'No changes applied' });
@@ -67,7 +71,7 @@ const get = async (req, res) => {
     try {
 
         if (id) {
-            const data = await zoneModel.findOne({ _id: id, isDel: "0" });
+            const data = await hotelCategoryModel.findOne({ _id: id, isDel: "0" });
             if (!data) {
                 return res.status(404).json({ err: 'No data found' });
             }
@@ -76,15 +80,15 @@ const get = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
-            const data = await zoneModel.find({ isDel: "0", name: regex })
+            const data = await hotelCategoryModel.find({ isDel: "0", name: regex })
 
             return res.status(200).json(data);
         }
 
 
-        const data = await zoneModel.find({ isDel: trash ? "1" : "0" })
+        const data = await hotelCategoryModel.find({ isDel: trash ? "1" : "0" })
             .skip(skip).limit(limit).sort({ _id: -1 });
-        const totalCount = await zoneModel.countDocuments({ isDel: trash ? "1" : "0" });
+        const totalCount = await hotelCategoryModel.countDocuments({ isDel: trash ? "1" : "0" });
 
         const result = { data: data, total: totalCount, page, limit };
 
@@ -106,7 +110,7 @@ const deleteRecord = async (req, res) => {
     }
 
     try {
-        const result = await zoneModel.updateMany(
+        const result = await hotelCategoryModel.updateMany(
             { _id: { $in: ids } },
             { $set: { isDel: trash ? "1" : "2" } }
         );
@@ -133,7 +137,7 @@ const restore = async (req, res) => {
     }
 
     try {
-        const result = await zoneModel.updateMany(
+        const result = await hotelCategoryModel.updateMany(
             { _id: { $in: ids } },
             { $set: { isDel: "0" } }
         );
