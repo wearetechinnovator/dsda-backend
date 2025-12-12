@@ -80,7 +80,7 @@ const get = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
-            const data = await hotelCategoryModel.find({ isDel: "0", name: regex })
+            const data = await hotelCategoryModel.find({ isDel: "0", hotel_category_name: regex })
 
             return res.status(200).json(data);
         }
