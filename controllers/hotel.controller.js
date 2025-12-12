@@ -2,7 +2,6 @@ const fetch = require("node-fetch");
 const hotelModel = require("../models/hotel.model");
 const jwt = require('jsonwebtoken');
 const tripleSHA1 = require("../helper/sha1_hash");
-const amenitiesModel = require("../models/amenities.model");
 const { default: mongoose } = require("mongoose");
 const jwtKey = process.env.JWT_KEY;
 const HOTEL_JWT_KEY = process.env.HOTEL_JWT_KEY;
@@ -491,7 +490,6 @@ const get = async (req, res) => {
 };
 
 
-
 const deleteRecord = async (req, res) => {
   const { ids, trash } = req.body;
 
@@ -561,7 +559,6 @@ const changePassword = async (req, res) => {
 
 
     const hashedCurrent = tripleSHA1(currentPass, 3);
-    console.log(hashedCurrent);
     if (hotel.hotel_password !== hashedCurrent) {
       return res.status(401).json({ err: "Incorrect current password" });
     }
