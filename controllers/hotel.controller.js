@@ -3,6 +3,7 @@ const hotelModel = require("../models/hotel.model");
 const jwt = require('jsonwebtoken');
 const tripleSHA1 = require("../helper/sha1_hash");
 const amenitiesModel = require("../models/amenities.model");
+const { default: mongoose } = require("mongoose");
 const jwtKey = process.env.JWT_KEY;
 const HOTEL_JWT_KEY = process.env.HOTEL_JWT_KEY;
 const bookingApi = process.env.BOOKING_API;
@@ -149,7 +150,7 @@ const update = async (req, res) => {
     sevenBed, eightBed, nineBed, tenBed, totalBed, totalRoom, swimmingPool,
     photoGallery, documentData, roomTypeData } = req.body;
 
-  if ([name, district, zone, sector, policeStation, username, password].some(field => !field || field === "")) {
+  if ([name, district, zone, sector, policeStation, username].some(field => !field || field === "")) {
     return res.status(400).json({ err: 'Please fill the requires' })
   }
 
@@ -188,7 +189,7 @@ const update = async (req, res) => {
     hotel_manager_name: managerName,
     hotel_manager_phone: managerPhone,
     hotel_manager_phone_alternative: alternateManagerPhone,
-    hotel_status: status || "1",
+    hotel_status: status,
     hotel_1_bed_room: oneBed,
     hotel_2_bed_room: twoBed,
     hotel_3_bed_room: threeBed,
@@ -206,6 +207,7 @@ const update = async (req, res) => {
     hotel_room_type: roomTypeData
   };
 
+
   if (password && password.trim() !== "") {
     // Hash Password;
     const hashPassword = tripleSHA1(password, 3);
@@ -214,10 +216,8 @@ const update = async (req, res) => {
 
   // Update Hotel
   try {
-    const result = await hotelModel.updateOne({ _id: id }, {
-      $set: {
-        updateData
-      }
+    const result = await hotelModel.updateOne({ _id: new mongoose.Types.ObjectId(String(id)) }, {
+      $set: updateData
     })
 
     if (result.modifiedCount === 0) {
@@ -247,7 +247,7 @@ const get = async (req, res) => {
   const block = req.body?.block;
   const district = req.body?.district;
   const policeStation = req.body?.policeStation;
-  const hotelId = req.body?.id;
+  const hotelId = req.body?.hotelId;
   const isEnrolled = req.body?.enrolled;
   const isOccupied = req.body?.occupied;
   const hotelStatus = req.body?.hotelStatus;
@@ -399,7 +399,7 @@ const get = async (req, res) => {
     if (sector) query.hotel_sector_id = sector;
     if (block) query.hotel_block_id = block;
     if (policeStation) query.hotel_police_station_id = policeStation;
-    if (hotelId) query._id = hotelId;
+    if (hotelId) query._id = new mongoose.Types.ObjectId(String(hotelId));
     if (hotelStatus) query.hotel_status = hotelStatus;
 
 
