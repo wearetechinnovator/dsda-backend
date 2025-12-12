@@ -148,7 +148,7 @@ const update = async (req, res) => {
     managerPhone, alternateManagerPhone, restaurantAvailable, conferanceHallAvailable,
     status, oneBed, twoBed, threeBed, fourBed, fiveBed, sixBed,
     sevenBed, eightBed, nineBed, tenBed, totalBed, totalRoom, swimmingPool,
-    photoGallery, documentData, roomTypeData } = req.body;
+    photoGallery, documentData, roomTypeData, hotelUpdate } = req.body;
 
   if ([name, district, zone, sector, policeStation, username].some(field => !field || field === "")) {
     return res.status(400).json({ err: 'Please fill the requires' })
@@ -158,6 +158,14 @@ const update = async (req, res) => {
   if (exist) {
     return res.status(409).json({ err: "Username already exists" });
   }
+
+
+
+  let hotelUpdateData = {
+    hotel_gallery_image: photoGallery,
+    hotel_document: documentData,
+    hotel_room_type: roomTypeData
+  };
 
 
   let updateData = {
@@ -217,7 +225,7 @@ const update = async (req, res) => {
   // Update Hotel
   try {
     const result = await hotelModel.updateOne({ _id: new mongoose.Types.ObjectId(String(id)) }, {
-      $set: updateData
+      $set: hotelUpdate ? hotelUpdateData : updateData
     })
 
     if (result.modifiedCount === 0) {
@@ -260,7 +268,7 @@ const get = async (req, res) => {
   try {
 
     if (id) {
-      const data = await hotelModel.findOne({ _id: id, IsDel: "0" }, {hotel_password: 0})
+      const data = await hotelModel.findOne({ _id: id, IsDel: "0" }, { hotel_password: 0 })
         .populate('hotel_sector_id')
         .populate('hotel_block_id')
         .populate('hotel_zone_id')
