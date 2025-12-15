@@ -3,32 +3,21 @@
  * ===============================================
  * 1. Document Type
  * 2. Id Card Type
- * 3. Room Type
- * 4. Hotel Categories
- * 5. Country
- * 6. State
- * 7. City
  */
 
 const documentTypeModel = require("../models/documentType.model");
-const roomTypeModel = require("../models/roomType.model");
 const idCardTypeModel = require("../models/roomType.model");
-const hotelCategory = require("../models/hotelCategory.model");
 
 
 const get = async (req, res) => {
-    // `room` | `id` | `document` | `hotel-category` | `country` | `state` | `city`
+    // `id` | `document`
     const { which } = req.params;
     let model;
 
-    if (which === "room") {
-        model = roomTypeModel;
-    } else if (which === "id") {
+    if (which === "id") {
         model = idCardTypeModel;
     } else if (which === "document") {
         model = documentTypeModel;
-    } else if (which === "hotel-category") {
-        model = hotelCategory;
     }
     else {
         return res.status(401).json({ err: "Invalid type" });
@@ -44,7 +33,7 @@ const get = async (req, res) => {
         return res.status(200).json(data);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
