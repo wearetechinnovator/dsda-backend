@@ -22,10 +22,10 @@ const autoChekoutCron = async () => {
             const url = process.env.BOOKING_API + "/check-out/auto-checkout";
             const req = await fetch(url, { method: 'POST' });
             const res = await req.json();
-            console.log(res);
+             
 
         } catch (error) {
-            console.log(error)
+             
         }
     })
 }

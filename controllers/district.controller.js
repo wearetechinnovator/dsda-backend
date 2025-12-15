@@ -24,7 +24,7 @@ const create = async (req, res) => {
         return res.status(200).json(insert);
 
     } catch (error) {
-        console.log(error);
+         
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -49,7 +49,7 @@ const update = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        console.log(error);
+         
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -94,7 +94,7 @@ const get = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        console.error(error);
+        
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -121,7 +121,7 @@ const deleteRecord = async (req, res) => {
         return res.status(200).json({ msg: 'Records deleted successfully', result });
 
     } catch (error) {
-        console.error(error);
+        
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -148,7 +148,7 @@ const restore = async (req, res) => {
         return res.status(200).json({ msg: 'Records restore successfully', result });
 
     } catch (error) {
-        console.error(error);
+        
         return res.status(500).json({ err: "Something went wrong" });
     }
 

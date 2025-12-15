@@ -71,7 +71,6 @@ const addAmenities = async (req, res) => {
         // return res.send(result)
 
     } catch (error) {
-        console.error(error);
     }
 }
 
@@ -100,7 +99,6 @@ const updateAmenities = async (req, res) => {
         return res.status(200).json(data);
 
     } catch (error) {
-        console.error(error);
         return res.status(500).json({ err: "Something went wrong" });
     }
 }
@@ -212,7 +210,6 @@ const getAmenities = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        console.error(error);
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -270,7 +267,6 @@ const getTotalAmenityPay = async (req, res) => {
         return res.status(200).json(totalPay)
 
     } catch (error) {
-        console.error(error);
         return res.status(500).json({ err: "Something went wrong" });
     }
 

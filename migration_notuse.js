@@ -39,7 +39,7 @@ const migrateUsers = async () => {
             })),
         );
 
-        console.log("✅ Migration completed (insert only)!");
+        
         process.exit(0);
     } catch (err) {
         console.error("❌ Migration failed:", err);

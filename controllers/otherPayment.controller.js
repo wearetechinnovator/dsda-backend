@@ -29,7 +29,7 @@ const addPayment = async (req, res) => {
         return res.status(200).json(insert);
 
     } catch (error) {
-        console.log(error);
+         
         return res.status(500).json({ err: "Something went wrong" });
     }
 }
@@ -64,7 +64,7 @@ const updatePayment = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        console.log(error);
+         
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -130,7 +130,7 @@ const getPayment = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        console.error(error);
+        
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -157,7 +157,7 @@ const deletePayment = async (req, res) => {
         return res.status(200).json({ msg: 'Records deleted successfully', result });
 
     } catch (error) {
-        console.error(error);
+        
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -185,7 +185,7 @@ const restorePayment = async (req, res) => {
         return res.status(200).json({ msg: 'Records restore successfully', result });
 
     } catch (error) {
-        console.error(error);
+        
         return res.status(500).json({ err: "Something went wrong" });
     }
 
