@@ -411,7 +411,7 @@ const get = async (req, res) => {
 
 
     const data = await hotelModel.find(query)
-      .skip(skip).limit(limit).sort({ _id: -1 })
+      .skip(skip).limit(limit).sort({ createdAt: -1 })
       .populate('hotel_sector_id')
       .populate('hotel_block_id')
       .populate('hotel_zone_id')
