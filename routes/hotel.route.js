@@ -1,6 +1,7 @@
 const {
     create, get, update, deleteRecord,
-    restore, login, changePassword
+    restore, login, changePassword,
+    getBedAvailablity
 } = require("../controllers/hotel.controller");
 const router = require("express").Router();
 const middleware = require("../middleware/middleware");
@@ -35,6 +36,11 @@ router
 router
     .route("/change-password")
     .post(middleware, changePassword);
+
+router
+    .route("/get-bed-availablity")
+    .post(middleware, getBedAvailablity);
+
 
 
 module.exports = router;

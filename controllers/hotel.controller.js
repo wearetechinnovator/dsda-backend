@@ -48,7 +48,7 @@ const login = async (req, res) => {
     return res.status(200).json({ hotel, token });
 
   } catch (error) {
-     
+
     return res.status(500).json({ err: "Something went wrong" });
   }
 }
@@ -133,7 +133,7 @@ const create = async (req, res) => {
 
     return res.status(200).json(insert);
   } catch (error) {
-    
+
     return res.status(500).json({ err: "Something went wrong" });
   }
 };
@@ -234,7 +234,7 @@ const update = async (req, res) => {
     return res.status(200).json({ msg: "Hotel updated successfully" });
 
   } catch (error) {
-     
+
     return res.status(500).json({ err: "Something went wrong" });
   }
 
@@ -246,9 +246,9 @@ const get = async (req, res) => {
   const id = req.body?.id;
   const limit = req.body?.limit ?? 10;
   const page = req.body?.page ?? 1;
+  const skip = (page - 1) * limit;
   const search = req.body?.search?.trim();
   const trash = req.body?.trash;
-  const skip = (page - 1) * limit;
   const zone = req.body?.zone;
   const sector = req.body?.sector;
   const block = req.body?.block;
@@ -483,7 +483,7 @@ const get = async (req, res) => {
     return res.status(200).json(result);
 
   } catch (error) {
-    
+
     return res.status(500).json({ err: "Something went wrong" });
   }
 
@@ -510,7 +510,7 @@ const deleteRecord = async (req, res) => {
     return res.status(200).json({ msg: 'Records deleted successfully', result });
 
   } catch (error) {
-    
+
     return res.status(500).json({ err: "Something went wrong" });
   }
 
@@ -537,7 +537,7 @@ const restore = async (req, res) => {
     return res.status(200).json({ msg: 'Records restore successfully', result });
 
   } catch (error) {
-    
+
     return res.status(500).json({ err: "Something went wrong" });
   }
 
@@ -578,6 +578,104 @@ const changePassword = async (req, res) => {
 };
 
 
+const getBedAvailablity = async (req, res) => {
+  const limit = req.body?.limit ?? 10;
+  const page = req.body?.page ?? 1;
+  const skip = (page - 1) * limit;
+  const bedStatus = req.body.bedStatus;
+  const hotelId = req.body?.hotelId;
+  const token = req.body?.token;
+
+
+  try {
+    let query = { IsDel: "0" };
+
+    if (hotelId) query._id = new mongoose.Types.ObjectId(String(hotelId));
+    const data = await hotelModel.find(query)
+      .populate('hotel_sector_id')
+      .populate('hotel_block_id')
+      .populate('hotel_zone_id')
+      .populate('hotel_district_id')
+      .populate('hotel_police_station_id')
+      .populate('hotel_category');
+
+
+    const activeBookingCount = await fetch(bookingApi + "/check-in/get-active-booking-count-by-hotel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+    const activeBookingCountData = await activeBookingCount.json();
+
+    const result = [];
+    const Bedcount = {
+      totalBed: 0,
+      occupiedBed: 0,
+      vacantBed: 0,
+      extraOccuBed: 0
+    };
+    for (const doc of data) {
+      const d = doc.toObject();
+      const currentHotelData = activeBookingCountData.find(item => item._id == d._id);
+      d['hotel_total_occupied'] = currentHotelData?.totalBookings;
+
+      const occupied = d.hotel_total_occupied || 0;
+      const vacant = d.hotel_total_bed - occupied;
+
+
+      if (bedStatus && bedStatus !== "all") {
+        if (bedStatus === "occupied" && occupied > 0) {
+          Bedcount.totalBed += parseInt(d.hotel_total_bed);
+          Bedcount.occupiedBed += parseInt(occupied);
+          Bedcount.vacantBed += parseInt(vacant);
+          Bedcount.extraOccuBed += parseInt(d.hotel_total_bed) - parseInt(occupied) < 0 ? parseInt(occupied) - parseInt(d.hotel_total_bed) : 0;
+
+          result.push(d);
+        } else if (bedStatus === "vacant" && vacant > 0) {
+          Bedcount.totalBed += parseInt(d.hotel_total_bed);
+          Bedcount.occupiedBed += parseInt(occupied);
+          Bedcount.vacantBed += parseInt(vacant);
+          Bedcount.extraOccuBed += parseInt(d.hotel_total_bed) - parseInt(occupied) < 0 ? parseInt(occupied) - parseInt(d.hotel_total_bed) : 0;
+
+          result.push(d);
+        } else if (bedStatus === "extra" && vacant < 0) {
+          Bedcount.totalBed += parseInt(d.hotel_total_bed);
+          Bedcount.occupiedBed += parseInt(occupied);
+          Bedcount.extraOccuBed += parseInt(d.hotel_total_bed) - parseInt(occupied) < 0 ? parseInt(occupied) - parseInt(d.hotel_total_bed) : 0;
+
+          result.push(d);
+        }
+      } else {
+        Bedcount.totalBed += parseInt(d.hotel_total_bed);
+        Bedcount.occupiedBed += parseInt(occupied);
+        Bedcount.vacantBed += parseInt(vacant);
+        Bedcount.extraOccuBed += parseInt(d.hotel_total_bed) - parseInt(occupied) < 0 ? parseInt(occupied) - parseInt(d.hotel_total_bed) : 0;
+
+        result.push(d);
+      }
+
+    }
+
+
+    // apply pagination
+    const total = result.length;
+    const paginatedResult = result.slice(skip, parseInt(skip) + parseInt(limit));
+    return res.status(200).json({
+      data: paginatedResult,
+      Bedcount,
+      total,
+      page: Number(page),
+      limit: Number(limit)
+    });
+
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ err: "Something went wrong" })
+  }
+}
+
+
 
 
 module.exports = {
@@ -587,6 +685,7 @@ module.exports = {
   restore,
   deleteRecord,
   login,
-  changePassword
+  changePassword,
+  getBedAvailablity
 };
 
