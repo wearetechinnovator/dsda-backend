@@ -5,14 +5,18 @@ const noticeModel = require("../models/notice.model");
 const create = async (req, res) => {
     const { hotel, title, file, date, status, details } = req.body;
 
-    if ([hotel].length < 0) {
-        return res.status(400).json({ err: 'Please fill the requires' })
+    if (!title) {
+        return res.status(400).json({ err: 'Please provide title' })
     }
 
     try {
+        let Allhotels = [];
+        if (hotel && hotel.length > 0) {
+            Allhotels = [...hotel];
+        }
 
         const insert = await noticeModel.create({
-            notice_hotel: [...hotel],
+            notice_hotel: Allhotels,
             notice_title: title,
             notice_file: file,
             notice_date: date,
@@ -27,7 +31,7 @@ const create = async (req, res) => {
         return res.status(200).json(insert);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -37,15 +41,19 @@ const create = async (req, res) => {
 const update = async (req, res) => {
     const { id, hotel, title, file, date, status, details } = req.body;
 
-    if ([hotel].length < 0) {
+    if (!title) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 
     try {
+        let Allhotels = [];
+        if (hotel && hotel.length > 0) {
+            Allhotels = [...hotel];
+        }
 
         const result = await noticeModel.updateOne({ _id: id }, {
             $set: {
-                notice_hotel: [...hotel],
+                notice_hotel: Allhotels,
                 notice_title: title,
                 notice_file: file,
                 notice_date: date,
@@ -61,7 +69,7 @@ const update = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -105,7 +113,7 @@ const get = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -122,9 +130,16 @@ const getHotelNotice = async (req, res) => {
 
     try {
         const getNotice = await noticeModel.find({
-            notice_hotel: { $in: [hotelId] },
-            isDel: "0"
-        }).populate("notice_hotel").sort({ createdAt: -1 });
+            isDel: "0",
+            $or: [
+                { notice_hotel: { $in: [hotelId] } }, // hotel-specific
+                { notice_hotel: { $exists: false } }, // field not present
+                { notice_hotel: null },               // explicitly null
+                { notice_hotel: { $size: 0 } }         // empty array
+            ]
+        })
+            .populate("notice_hotel")
+            .sort({ createdAt: -1 });
 
         if (!getNotice || getNotice.length === 0) {
             return res.status(404).json({ msg: "No notices found for this hotel" });
@@ -133,7 +148,7 @@ const getHotelNotice = async (req, res) => {
         return res.status(200).json(getNotice);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 };
@@ -159,7 +174,7 @@ const deleteRecord = async (req, res) => {
         return res.status(200).json({ msg: 'Records deleted successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -186,7 +201,7 @@ const restore = async (req, res) => {
         return res.status(200).json({ msg: 'Records restore successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
