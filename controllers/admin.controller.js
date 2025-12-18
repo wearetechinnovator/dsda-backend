@@ -34,7 +34,7 @@ const login = async (req, res) => {
 
         // Update IP and DateTime;
         const ip = req.headers['x-forwarded-for']?.split(',').shift() || req.socket?.remoteAddress;
-        const dateTime = new Date().toLocaleString();
+        const dateTime = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
         await adminModel.updateOne({ _id: admin._id }, {
             $set: {
