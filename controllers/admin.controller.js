@@ -26,7 +26,7 @@ const login = async (req, res) => {
         }
 
         // Check password;
-        const checkPass = bcryptJs.compare(pass, admin.password);
+        const checkPass = await bcryptJs.compare(pass, admin.password);
         if (!checkPass) {
             return res.status(401).json({ err: 'Incorrect email or password' })
         }
