@@ -53,7 +53,6 @@ const login = async (req, res) => {
         return res.status(200).json({ token, userId: admin._id });
 
     } catch (error) {
-         
         return res.status(500).json({ err: "Something went wrong" });
     }
 

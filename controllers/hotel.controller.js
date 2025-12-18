@@ -31,7 +31,7 @@ const login = async (req, res) => {
 
 
   try {
-    const hotel = await hotelModel.findOne({ hotel_username: username }, { password: 0 });
+    const hotel = await hotelModel.findOne({ hotel_username: username, IsDel:"0" }, { password: 0 });
     if (!hotel) {
       return res.status(404).json({ err: 'User not found' });
     }
@@ -358,9 +358,7 @@ const get = async (req, res) => {
         .populate('hotel_zone_id')
         .populate('hotel_district_id')
         .populate('hotel_police_station_id')
-        .populate('hotel_category')
-
-      console.log()
+        .populate('hotel_category');
 
       if (isEnrolled) {
         const result = [];
