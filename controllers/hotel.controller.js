@@ -71,7 +71,7 @@ const create = async (req, res) => {
       return res.status(400).json({ err: "fill the required" });
     }
 
-    const exist = await hotelModel.findOne({ hotel_username: username });
+    const exist = await hotelModel.findOne({ hotel_username: username, IsDel: "0" });
     if (exist) {
       return res.status(409).json({ err: "Username already exists" });
     }
@@ -153,7 +153,7 @@ const update = async (req, res) => {
     return res.status(400).json({ err: 'Please fill the requires' })
   }
 
-  const exist = await hotelModel.findOne({ $and: [{ hotel_username: username }, { _id: { $ne: id } }] });
+  const exist = await hotelModel.findOne({ $and: [{ hotel_username: username }, { IsDel: "0" }, { _id: { $ne: id } }] });
   if (exist) {
     return res.status(409).json({ err: "Username already exists" });
   }
@@ -234,7 +234,7 @@ const update = async (req, res) => {
     return res.status(200).json({ msg: "Hotel updated successfully" });
 
   } catch (error) {
-
+    console.log(error);
     return res.status(500).json({ err: "Something went wrong" });
   }
 
@@ -346,7 +346,13 @@ const get = async (req, res) => {
 
     if (search) {
       const regex = new RegExp(search, "i");
-      const data = await hotelModel.find({ IsDel: "0", hotel_name: regex })
+      const data = await hotelModel.find({
+        IsDel: "0",
+        $or: [
+          { hotel_name: regex },
+          { hotel_username: regex }
+        ]
+      })
         .populate('hotel_sector_id')
         .populate('hotel_block_id')
         .populate('hotel_zone_id')
@@ -354,6 +360,7 @@ const get = async (req, res) => {
         .populate('hotel_police_station_id')
         .populate('hotel_category')
 
+      console.log()
 
       if (isEnrolled) {
         const result = [];
