@@ -88,7 +88,7 @@ const get = async (req, res) => {
     try {
 
         if (id) {
-            const data = await noticeModel.findOne({ _id: id, isDel: "0" });
+            const data = await noticeModel.findOne({ _id: id, isDel: "0" }).populate("notice_hotel");
             if (!data) {
                 return res.status(404).json({ err: 'No data found' });
             }
