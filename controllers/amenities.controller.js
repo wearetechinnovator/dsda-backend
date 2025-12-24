@@ -6,7 +6,7 @@ const settingModel = require("../models/setting.model");
 
 // USE IN CRON JOB TO SYNC AMENITIES PAYMENT DATA MONTHLY
 // =======================================================
-const addAmenities = async (req, res) => {
+const addAmenities = async (req, res) => { 
     try {
         // Get Start and End Date of Previous Month;
         const d = new Date();
@@ -79,7 +79,7 @@ const updateAmenities = async (req, res) => {
     const { mode, transactionId, status, receiptNo, id } = req.body;
 
 
-    if ([mode, transactionId, status, id].some(field => !field || field === "")) {
+    if ([mode, status, id].some(field => !field || field === "")) {
         return res.status(400).json({ err: "All fields are required" });
     }
 

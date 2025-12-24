@@ -9,9 +9,9 @@ const amenityCron = async () => {
     const settings = await settingModel.findOne({}, { payment_start_date: 1 });
     const date = parseInt(settings?.payment_start_date) - 1;
 
-    cron.schedule(`0 12 ${date} * *`, () => {
-        addAmenities();
-    });
+    cron.schedule(`5 0 ${date} * *`, async () => {
+        await addAmenities();
+    }, { timezone: "Asia/Kolkata" });
 }
 
 
@@ -22,10 +22,9 @@ const autoChekoutCron = async () => {
             const url = process.env.BOOKING_API + "/check-out/auto-checkout";
             const req = await fetch(url, { method: 'POST' });
             const res = await req.json();
-             
 
         } catch (error) {
-             
+
         }
     })
 }

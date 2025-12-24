@@ -681,6 +681,30 @@ const getBedAvailablity = async (req, res) => {
 }
 
 
+// Get Hotel Details for Public Access without authentication
+const getHotelDetails = async(req, res)=>{
+  const { hotelId } = req.body;
+
+  if (!hotelId) {
+    return res.status(400).json({ err: "Please provide hotelId" });
+  }
+
+  try {
+    const hotel = await hotelModel.findOne({
+      _id: new mongoose.Types.ObjectId(String(hotelId)),
+    }, {hotel_name: 1});
+    
+    if (!hotel) {
+      return res.status(404).json({ err: "Hotel not found" });
+    }
+    return res.status(200).json(hotel);
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ err: "Something went wrong" });
+  }
+}
+
+
 
 
 module.exports = {
@@ -691,6 +715,7 @@ module.exports = {
   deleteRecord,
   login,
   changePassword,
-  getBedAvailablity
+  getBedAvailablity,
+  getHotelDetails
 };
 

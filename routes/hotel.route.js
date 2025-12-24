@@ -1,7 +1,8 @@
 const {
     create, get, update, deleteRecord,
     restore, login, changePassword,
-    getBedAvailablity
+    getBedAvailablity,
+    getHotelDetails
 } = require("../controllers/hotel.controller");
 const router = require("express").Router();
 const middleware = require("../middleware/middleware");
@@ -41,6 +42,9 @@ router
     .route("/get-bed-availablity")
     .post(middleware, getBedAvailablity);
 
+router
+    .route("/get-hotel-details")
+    .post(getHotelDetails);
 
 
 module.exports = router;

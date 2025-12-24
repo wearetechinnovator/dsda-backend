@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const otherPaymentModel = require("../models/otherPayment.model");
 
 
@@ -29,14 +30,14 @@ const addPayment = async (req, res) => {
         return res.status(200).json(insert);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 }
 
 
 const updatePayment = async (req, res) => {
-    const { hotel, purpose, amount, transactionId, paymentDate, status, id, receiptNo} = req.body;
+    const { hotel, purpose, amount, transactionId, paymentDate, status, id, receiptNo } = req.body;
 
     if ([hotel, purpose, amount, transactionId, paymentDate, status, id].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
@@ -64,7 +65,7 @@ const updatePayment = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -85,7 +86,7 @@ const getPayment = async (req, res) => {
 
     try {
         if (id) {
-            const data = await otherPaymentModel.findOne({ _id: id, isDel: "0" });
+            const data = await otherPaymentModel.findOne({ _id: id, isDel: "0" }).populate('other_payment_hotel_id');
             if (!data) {
                 return res.status(404).json({ err: 'No data found' });
             }
@@ -98,12 +99,11 @@ const getPayment = async (req, res) => {
             let query = { isDel: "0" };
 
             if (transactionId) {
-                query.other_payment_hotel_id = hotelId;
+                query.other_payment_hotel_id = new mongoose.Types.ObjectId(String(hotelId));
                 query.other_payment_payment_transaction_id = regex;
             } else {
                 query.other_payment_payment_ref_no = regex;
             }
-
 
             const data = await otherPaymentModel.find(query).populate('other_payment_hotel_id')
 
@@ -113,7 +113,7 @@ const getPayment = async (req, res) => {
 
         let query = { isDel: trash ? "1" : "0" };
 
-        if (hotelId) query.other_payment_hotel_id = hotelId;
+        if (hotelId) query.other_payment_hotel_id = new mongoose.Types.ObjectId(String(hotelId));
         if (purpose) query.other_payment_purpose = purpose;
         if (amount) query.other_payment_amount = amount;
 
@@ -130,7 +130,7 @@ const getPayment = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -157,7 +157,7 @@ const deletePayment = async (req, res) => {
         return res.status(200).json({ msg: 'Records deleted successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -185,7 +185,7 @@ const restorePayment = async (req, res) => {
         return res.status(200).json({ msg: 'Records restore successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
