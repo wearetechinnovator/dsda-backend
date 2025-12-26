@@ -1,117 +1,9 @@
 const crypto = require("crypto");
 const amenitiesModel = require("../models/amenities.model");
 const otherPaymentModel = require("../models/otherPayment.model");
+const payResponseModel = require("../models/payResponse.model");
 const fetch = require("node-fetch");
-
-
-// const paymentProcess = async (req, res) => {
-//     const { id, type } = req.body;
-
-//     if (!id || !type) {
-//         return res.status(500).json({ err: "Please provide data" })
-//     }
-
-//     // ENCRYPT DATA;
-//     function aes128Encrypt(str) {
-//         const key = "3725642567501001"; // 16 bytes
-//         const cipher = crypto.createCipheriv(
-//             'aes-128-ecb',
-//             Buffer.from(key, 'utf8'),
-//             null // ECB has no IV
-//         );
-
-//         cipher.setAutoPadding(true); // same as PKCS7
-
-//         let encrypted = cipher.update(str, 'utf8', 'base64');
-//         encrypted += cipher.final('base64');
-
-//         return encrypted;
-//     }
-
-//     try {
-//         const PAY_URL = "https://eazypay.icicibank.com/EazyPG?";
-//         const MERCHANT_ID = "376758";
-//         const REFERENCE_NO = String(Date.now() + (Math.floor(Math.random() * 9) + 1));
-//         let SUB_MERCHANT_ID, AMOUNT, HOTEL_ID, HOTEL_NAME, YEAR, MONTH, PAYMENT_ID, TYPE = type;
-
-
-//         if (type === "others") {
-
-//             // UPDAET OHTER PAYMENT TABLE;
-//             await otherPaymentModel.updateOne({_id: id}, {
-//                 $set: {
-//                     other_payment_payment_init:"1",
-//                     other_payment_payment_status:"2",
-//                     other_payment_payment_ref_no: REFERENCE_NO
-//                 }
-//             });
-
-//             const payDetails = await otherPaymentModel.findOne({ _id: id }).populate('other_payment_hotel_id');
-//             SUB_MERCHANT_ID = String(payDetails.other_payment_hotel_id._id);
-//             AMOUNT = String(payDetails.other_payment_amount);
-//             HOTEL_ID = String(payDetails.other_payment_hotel_id._id);
-//             HOTEL_NAME = payDetails.other_payment_hotel_id.hotel_name;
-//             YEAR = "ADDITIONAL FIELD1";
-//             MONTH = "ADDITIONAL FIELD2";
-//             PAYMENT_ID = String(id);
-//         }
-
-
-//         if (type === "monthly") {
-
-//             // UPDAET AMENITY TABLE;
-//             await amenitiesModel.updateOne({_id: id}, {
-//                 $set: {
-//                     amenities_payment_init:"1",
-//                     amenities_payment_status:"2",
-//                     amenities_payment_ref_no: REFERENCE_NO
-//                 }
-//             });
-
-
-//             const payDetails = await amenitiesModel.findOne({ _id: id }).populate('amenities_hotel_id');
-//             SUB_MERCHANT_ID = String(payDetails.amenities_hotel_id._id);
-//             AMOUNT = String(payDetails.amenities_amount);
-//             HOTEL_ID = String(payDetails.amenities_hotel_id._id);
-//             HOTEL_NAME = payDetails.amenities_hotel_id.hotel_name;
-//             YEAR = String(payDetails.amenities_year);
-//             MONTH = String(payDetails.amenities_month);
-//             PAYMENT_ID = String(id);
-//         }
-
-
-//         // Encrypt required fields
-//         const MANDATORY_FIELDS = aes128Encrypt(`${REFERENCE_NO}|${SUB_MERCHANT_ID}|${AMOUNT}|${HOTEL_ID}|${HOTEL_NAME}`);
-//         const OPTIONAL_FIELDS = aes128Encrypt(`${YEAR}|${MONTH}|${PAYMENT_ID}|${TYPE}|ADDITIONALFIELD5`);
-//         const RETURN_URL = aes128Encrypt("https://dsda.org.in/swagata/hotel/booking/confirmPayment");
-//         const ENC_REFERENCE_NO = aes128Encrypt(REFERENCE_NO);
-//         const ENC_SUB_MERCHANT_ID = aes128Encrypt(SUB_MERCHANT_ID);
-//         const TRANSACTION_AMOUNT = aes128Encrypt(AMOUNT);
-//         const PAY_MODE = aes128Encrypt("9");
-
-//         // Construct final payment URL
-//         const FINAL_URL =
-//             `${PAY_URL}` +
-//             `merchantid=${MERCHANT_ID}` +
-//             `&mandatory fields=${encodeURIComponent(MANDATORY_FIELDS)}` +
-//             `&optional fields=${encodeURIComponent(OPTIONAL_FIELDS)}` +
-//             `&returnurl=${encodeURIComponent(RETURN_URL)}` +
-//             `&Reference No=${encodeURIComponent(ENC_REFERENCE_NO)}` +
-//             `&submerchantid=${encodeURIComponent(ENC_SUB_MERCHANT_ID)}` +
-//             `&transaction amount=${encodeURIComponent(TRANSACTION_AMOUNT)}` +
-//             `&paymode=${encodeURIComponent(PAY_MODE)}`;
-
-//         if (!FINAL_URL) {
-//             return res.status(500).json({ err: 'URL NOT FOUND' })
-//         }
-
-//         return res.status(200).json({ url: FINAL_URL })
-
-//     } catch (error) {
-
-//         return res.status(500).json({ err: "Something went wrong" })
-//     }
-// }
+const { default: mongoose } = require("mongoose");
 
 
 
@@ -122,31 +14,41 @@ const paymentProcess = async (req, res) => {
         return res.status(500).json({ err: "Please provide data" })
     }
 
+
     function generateSecureHash(payload) {
-        const secretKey = "ae85111d-7cc7-4f75-b0dd-6ebd33f8a86f";
+        const secretKey = process.env.PAYMENT_SECRET_KEY;
 
-        const hashString =
-            payload.addlParam1 +
-            payload.addlParam2 +
-            payload.amount +
-            payload.currencyCode +
-            payload.customerEmailID +
-            payload.customerMobileNo +
-            payload.customerName +
-            payload.merchantId +
-            payload.merchantTxnNo +
-            payload.payType +
-            payload.returnURL +
-            payload.transactionType +
-            payload.txnDate +
-            secretKey;
+        // Only keys that participate in hash
+        const hashKeys = [
+            "addlParam1",
+            "aggregatorID",
+            "amount",
+            "currencyCode",
+            "customerEmailID",
+            "customerMobileNo",
+            "customerName",
+            "merchantId",
+            "merchantTxnNo",
+            "payType",
+            "returnURL",
+            "transactionType",
+            "txnDate"
+        ];
 
-        console.log("HASH TEXT ===>", hashString);
+        let hashString = "";
+
+        hashKeys.forEach(key => {
+            if (payload[key] !== undefined && payload[key] !== null) {
+                hashString += String(payload[key]);
+            }
+        });
+
         return crypto
-            .createHash("sha256")
-            .update(hashString)
+            .createHmac("sha256", secretKey)
+            .update(hashString, "ascii")
             .digest("hex");
     }
+
 
     function getTxnDate() {
         const d = new Date();
@@ -166,30 +68,67 @@ const paymentProcess = async (req, res) => {
     }
 
     try {
-        const URL = "https://pgpayuat.icicibank.com/tsp/pg/api/v2/initiateSale";
+        const refNo = String(Date.now() + (Math.floor(Math.random() * 9) + 1));
+        let hotelData, amount;
+
+        // Amenities Payment Update
+        if (type === "monthly") {
+            await amenitiesModel.updateOne({ _id: id }, {
+                $set: {
+                    amenities_payment_init: "1",
+                    amenities_payment_status: "2",
+                    amenities_payment_mode: "1",
+                    amenities_payment_ref_no: refNo,
+                }
+            });
+
+            const hotelDetails = await amenitiesModel.findOne({
+                _id: new mongoose.Types.ObjectId(String(id))
+            }).populate("amenities_hotel_id");
+
+            hotelData = hotelDetails.amenities_hotel_id;
+            amount = hotelDetails.amenities_amount;
+        }
+        else if (type === 'others') {
+            await otherPaymentModel.updateOne({ _id: id }, {
+                $set: {
+                    other_payment_payment_init: "1",
+                    other_payment_payment_status: "2",
+                    other_payment_payment_mode: "1",
+                    other_payment_payment_ref_no: refNo,
+                }
+            });
+
+            const hotelDetails = await otherPaymentModel.findOne({
+                _id: new mongoose.Types.ObjectId(String(id))
+            }).populate("other_payment_hotel_id");
+
+            hotelData = hotelDetails.other_payment_hotel_id;
+            amount = hotelDetails.other_payment_amount;
+
+        } else {
+            return res.status(400).json({ err: 'Unable to process payment' });
+        }
+
+
+        const URL = process.env.PAYMENT_INITIATE;
         const payload = {
-            "merchantId": "100000000007164",
-            "aggregatorID": "A100000000007164",
-            // "merchantTxnNo": "757585887575",
-            "merchantTxnNo": Date.now().toString(),
-            "amount": "100.00",
+            "merchantId": process.env.MERCHANT_ID,
+            "aggregatorID": process.env.AGGREGATOR_ID,
+            "merchantTxnNo": refNo,
+            "amount": Number(amount).toFixed(2),
             "currencyCode": "356",
             "payType": "0",
-            "customerEmailID": "test@gmail.com",
+            "customerEmailID": hotelData.hotel_email || "",
             "transactionType": "SALE",
-            "returnURL": "https://13.204.230.47:8080/pay-gateway/confirm",
-            // "returnURL": "https://pgpayuat.icicibank.com/tsp/pg/api/merchant",
-            // "txnDate": "20241121115413",
+            "returnURL": `${process.env.RETURN_URL}?ref=${refNo}&type=${type}`,
             "txnDate": getTxnDate(),
-            "customerMobileNo": "917709356672",
-            "customerName": "Narayan",
-            "addlParam1": "000",
-            "addlParam2": "111"
+            "customerMobileNo": hotelData.hotel_proprietor_phone,
+            "customerName": hotelData.hotel_name,
+            "addlParam1": type
         };
-
         payload.secureHash = generateSecureHash(payload);
 
-        console.log("FINAL PAYLOAD ===>", payload);
 
         const payment = await fetch(URL, {
             method: 'POST',
@@ -200,38 +139,386 @@ const paymentProcess = async (req, res) => {
         });
         const payResponse = await payment.json();
 
-        if (payResponse.responseCode !== "0000") {
-            return res.status(400).json(payResponse);
+        if (payResponse.responseCode !== "R1000") {
+            return res.status(400).json({ err: 'Unable to process payment' });
         }
 
-        res.json({
-            redirectURI: payResponse.redirectURI,
-            tranCtx: payResponse.tranCtx
+        return res.status(200).json({
+            redirectUrl: payResponse.redirectURI + "?tranCtx=" + payResponse.tranCtx
         });
 
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ err: "Something went wrong" })
     }
 }
 
 
-const paymentRedirect = async (req, res) => {
-    const payment = req.body;
+const paymentStatusCheck = async (req, res) => {
+    const { refNo, type } = req.body;
 
-    res.send(payment)
+    if (!refNo || !type) {
+        return res.status(500).json({ err: "Please provide type and ref no.", status: 'Invalid' })
+    }
 
+    function generateSecureHash(payload) {
+        const secretKey = process.env.PAYMENT_SECRET_KEY;
+
+        // Only keys that participate in hash
+        const hashKeys = [
+            "aggregatorID",
+            "amount",
+            "merchantId",
+            "merchantTxnNo",
+            "originalTxnNo",
+            "transactionType"
+        ];
+
+        let hashString = "";
+
+        hashKeys.forEach(key => {
+            if (payload[key] !== undefined && payload[key] !== null) {
+                hashString += String(payload[key]);
+            }
+        });
+
+        return crypto
+            .createHmac("sha256", secretKey)
+            .update(hashString, "ascii")
+            .digest("hex");
+    }
+
+    const checkStatusyRefNo = async ({ ref, amount, type, id, hotelId }) => {
+        const payload = {
+            "aggregatorID": process.env.AGGREGATOR_ID,
+            "merchantId": process.env.MERCHANT_ID,
+            "merchantTxnNo": ref,
+            "originalTxnNo": ref,
+            "amount": Number(amount).toFixed(2),
+            "transactionType": "STATUS",
+        }
+        payload.secureHash = generateSecureHash(payload);
+
+        const URL = process.env.CHECK_PAYMENT_STATUS;
+        const payment = await fetch(URL, {
+            method: 'POST',
+            headers: {
+                "Content-Type": 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        const payResponse = await payment.json();
+        const date = s => `${s?.slice(0, 4)}-${s?.slice(4, 6)}-${s?.slice(6, 8)}`;
+
+
+        // ONLY FOR DEVELOPER.......
+        await payResponseModel.create({
+            amenities_payment_id: id,
+            amenities_hotel_id: hotelId,
+            amenities_payment_ref_no: ref,
+            amenities_payment_transaction_id: ref,
+            amenities_transaction_type: type === "monthly" ? "0" : "1",
+            amenities_transaction_details: JSON.stringify(payResponse)
+        })
+
+
+        if (payResponse?.txnStatus === "REQ") return 'Processing';
+
+        else if (payResponse?.txnStatus === "SUC") {
+            if (type === "monthly") {
+
+
+                await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
+                    $set: {
+                        amenities_payment_date: date(payResponse.paymentDateTime),
+                        amenities_payment_status: "1",
+                        amenities_payment_transaction_id: refNo,
+                        amenities_transaction_details: JSON.stringify(payResponse),
+                    }
+                });
+            }
+            else if (type === "others") {
+                await otherPaymentModel.updateOne({ other_payment_payment_ref_no: refNo, isDel: "0" }, {
+                    $set: {
+                        other_payment_payment_date: date(payResponse.paymentDateTime),
+                        other_payment_payment_status: "1",
+                        other_payment_payment_transaction_id: refNo,
+                        other_payment_transaction_details: JSON.stringify(payResponse),
+                    }
+                });
+            }
+            else {
+                return "Invalid"
+            }
+
+            return "Success";
+        }
+        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030") {
+
+            if (type === "monthly") {
+                console.log("ttt", payResponse.responseCode)
+                await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
+                    $set: {
+                        amenities_payment_date: date(payResponse.paymentDateTime),
+                        amenities_payment_status: "0",
+                        amenities_transaction_details: JSON.stringify(payResponse),
+                    }
+                });
+            }
+            else if (type === "others") {
+                await otherPaymentModel.updateOne({ other_payment_payment_ref_no: refNo, isDel: "0" }, {
+                    $set: {
+                        other_payment_payment_date: date(payResponse.paymentDateTime),
+                        other_payment_payment_status: "0",
+                        other_payment_transaction_details: JSON.stringify(payResponse),
+                    }
+                });
+            }
+            else {
+                return "Invalid"
+            }
+
+            return "Failed";
+        }
+        else {
+            return "Invalid";
+        }
+
+    }
+
+    try {
+        let returnData = {
+            status: ''
+        };
+        if (type === "monthly") {
+            const checkStatus = await amenitiesModel.findOne({
+                amenities_payment_ref_no: refNo,
+                isDel: "0"
+            })
+            if (!checkStatus) {
+                return res.status(400).json({ err: 'Unable to check', status: 'Invalid' });
+            }
+
+
+            if (checkStatus.amenities_payment_status === "0") {
+                returnData.status = "Failed";
+            }
+            else if (checkStatus.amenities_payment_status === "1") {
+                returnData.status = "Success";
+            }
+            else if (checkStatus.amenities_payment_status === "2") {
+                const statusResult = await checkStatusyRefNo({
+                    ref: refNo, amount: checkStatus.amenities_amount, type,
+                    id: checkStatus._id, hotelId: checkStatus.amenities_hotel_id
+                });
+                returnData.status = statusResult;
+            }
+        }
+        else if (type === 'others') {
+            const checkStatus = await otherPaymentModel.findOne({
+                other_payment_payment_ref_no: refNo,
+                isDel: "0"
+            })
+            if (!checkStatus) {
+                return res.status(400).json({ err: 'Unable to check', status: 'Invalid' });
+            }
+
+            if (checkStatus.other_payment_payment_status === "0") {
+                returnData.status = "Failed";
+            }
+            else if (checkStatus.other_payment_payment_status === "1") {
+                returnData.status = "Success";
+            }
+            else if (checkStatus.other_payment_payment_status === "2") {
+                const statusResult = await checkStatusyRefNo({
+                    ref: refNo, amount: checkStatus.other_payment_amount, type,
+                    id: checkStatus._id, hotelId: checkStatus.other_payment_hotel_id
+                });
+                returnData.status = statusResult;
+            }
+
+        } else {
+            return res.status(400).json({ err: 'Unable to check', status: 'Invalid' });
+        }
+
+        return res.status(200).json(returnData);
+
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ err: "Something went wrong", status: 'Invalid' })
+    }
 }
 
 
-const paymentConfirm = async (req, res) => {
-    res.send("payment-confirm")
+// USED FOR CRON
+const autoStatusCheck = async () => {
+
+    function generateSecureHash(payload) {
+        const secretKey = process.env.PAYMENT_SECRET_KEY;
+
+        // Only keys that participate in hash
+        const hashKeys = [
+            "aggregatorID",
+            "amount",
+            "merchantId",
+            "merchantTxnNo",
+            "originalTxnNo",
+            "transactionType"
+        ];
+
+        let hashString = "";
+
+        hashKeys.forEach(key => {
+            if (payload[key] !== undefined && payload[key] !== null) {
+                hashString += String(payload[key]);
+            }
+        });
+
+        return crypto
+            .createHmac("sha256", secretKey)
+            .update(hashString, "ascii")
+            .digest("hex");
+    }
+
+    const checkStatusyRefNo = async ({ ref, amount, type, id, hotelId }) => {
+        const payload = {
+            "aggregatorID": process.env.AGGREGATOR_ID,
+            "merchantId": process.env.MERCHANT_ID,
+            "merchantTxnNo": ref,
+            "originalTxnNo": ref,
+            "amount": Number(amount).toFixed(2),
+            "transactionType": "STATUS",
+        }
+        payload.secureHash = generateSecureHash(payload);
+
+        const URL = process.env.CHECK_PAYMENT_STATUS;
+        const payment = await fetch(URL, {
+            method: 'POST',
+            headers: {
+                "Content-Type": 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        const payResponse = await payment.json();
+        const date = s => `${s?.slice(0, 4)}-${s?.slice(4, 6)}-${s?.slice(6, 8)}`;
+
+
+        // ONLY FOR DEVELOPER.......
+        await payResponseModel.create({
+            amenities_payment_id: id,
+            amenities_hotel_id: hotelId,
+            amenities_payment_ref_no: ref,
+            amenities_payment_transaction_id: ref,
+            amenities_transaction_type: type === "monthly" ? "0" : "1",
+            amenities_transaction_details: JSON.stringify(payResponse)
+        })
+
+
+        if (payResponse?.txnStatus === "REQ") return 'Processing';
+
+        else if (payResponse?.txnStatus === "SUC") {
+            if (type === "monthly") {
+
+
+                await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
+                    $set: {
+                        amenities_payment_date: date(payResponse.paymentDateTime),
+                        amenities_payment_status: "1",
+                        amenities_payment_transaction_id: refNo,
+                        amenities_transaction_details: JSON.stringify(payResponse),
+                    }
+                });
+            }
+            else if (type === "others") {
+                await otherPaymentModel.updateOne({ other_payment_payment_ref_no: refNo, isDel: "0" }, {
+                    $set: {
+                        other_payment_payment_date: date(payResponse.paymentDateTime),
+                        other_payment_payment_status: "1",
+                        other_payment_payment_transaction_id: refNo,
+                        other_payment_transaction_details: JSON.stringify(payResponse),
+                    }
+                });
+            }
+            else {
+                return "Invalid"
+            }
+
+            return "Success";
+        }
+        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030") {
+
+            if (type === "monthly") {
+                console.log("ttt", payResponse.responseCode)
+                await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
+                    $set: {
+                        amenities_payment_date: date(payResponse.paymentDateTime),
+                        amenities_payment_status: "0",
+                        amenities_transaction_details: JSON.stringify(payResponse),
+                    }
+                });
+            }
+            else if (type === "others") {
+                await otherPaymentModel.updateOne({ other_payment_payment_ref_no: refNo, isDel: "0" }, {
+                    $set: {
+                        other_payment_payment_date: date(payResponse.paymentDateTime),
+                        other_payment_payment_status: "0",
+                        other_payment_transaction_details: JSON.stringify(payResponse),
+                    }
+                });
+            }
+            else {
+                return "Invalid"
+            }
+
+            return "Failed";
+        }
+        else {
+            return "Invalid";
+        }
+
+    }
+
+    // Get Amenities
+    const getAmenities = await amenitiesModel.find({
+        amenities_payment_status: "2",
+        isDel: "0",
+        amenities_payment_ref_no: { $exists: true, $ne: null, $ne: "" }
+    });
+
+    // Get Other payment
+    const getOtherPayment = await otherPaymentModel.find({
+        other_payment_payment_status: "2",
+        isDel: '0',
+        other_payment_payment_ref_no: { $exists: true, $ne: null, $ne: "" }
+    })
+
+
+
+    for (let amenities of getAmenities) {
+        await checkStatusyRefNo({
+            amount: amenities.amenities_amount,
+            hotelId: amenities.amenities_hotel_id,
+            id: amenities._id,
+            ref: amenities.amenities_payment_ref_no,
+            type: "monthly"
+        })
+    }
+
+    for (let otherPayment of getOtherPayment) {
+        await checkStatusyRefNo({
+            amount: otherPayment.other_payment_amount,
+            hotelId: otherPayment.other_payment_hotel_id,
+            id: otherPayment._id,
+            ref: otherPayment.other_payment_payment_ref_no,
+            type: "others"
+        })
+    }
 
 }
 
 
 module.exports = {
     paymentProcess,
-    paymentConfirm,
-    paymentRedirect
+    paymentStatusCheck,
+    autoStatusCheck
 }

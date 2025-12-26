@@ -7,7 +7,7 @@ const otherPaymentModel = require("../models/otherPayment.model");
 const addPayment = async (req, res) => {
     const { hotel, purpose, amount, transactionId, paymentDate, status, receiptNo } = req.body;
 
-    if ([hotel, purpose, amount, transactionId, paymentDate, status].some(field => !field || field === "")) {
+    if ([hotel, purpose, amount, paymentDate, status].some(field => !field || field === "")) {
         return res.status(400).json({ err: 'Please fill the requires' })
     }
 

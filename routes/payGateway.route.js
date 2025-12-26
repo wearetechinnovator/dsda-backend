@@ -1,4 +1,4 @@
-const { paymentProcess, paymentConfirm } = require("../controllers/payGateway.controller");
+const { paymentProcess, paymentStatusCheck } = require("../controllers/payGateway.controller");
 const router = require("express").Router();
 const middleware = require("../middleware/middleware");
 
@@ -8,8 +8,8 @@ router
 
 
 router
-    .route("/confirm")
-    .post(middleware, paymentConfirm);
+    .route("/check-status")
+    .post(middleware, paymentStatusCheck);
 
 
 

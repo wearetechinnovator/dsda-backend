@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const settingModel = require('../models/setting.model');
 const { addAmenities } = require('../controllers/amenities.controller');
 const fetch = require("node-fetch");
+const { autoStatusCheck } = require('../controllers/payGateway.controller');
 
 
 
@@ -26,12 +27,20 @@ const autoChekoutCron = async () => {
         } catch (error) {
 
         }
-    })
+    }, { timezone: "Asia/Kolkata" })
 }
 
 
 
+const autoPaymentCheck = async()=>{
+    cron.schedule(`5 5 * * *`, async () => {
+        await autoStatusCheck();
+    }, { timezone: "Asia/Kolkata" });
+}
+
+
 module.exports = {
     amenityCron,
-    autoChekoutCron
+    autoChekoutCron,
+    autoPaymentCheck
 }

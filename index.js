@@ -6,7 +6,7 @@ const connection = require("./db/connection");
 const cors = require("cors");
 const compression = require("compression");
 const router = require("./routes/index.route");
-const { amenityCron, autoChekoutCron } = require('./helper/cronJob')
+const { amenityCron, autoChekoutCron, autoPaymentCheck } = require('./helper/cronJob')
 
 
 
@@ -52,6 +52,7 @@ connection().then(con => {
     if (con) {
         amenityCron(); //Amenity CRON;
         autoChekoutCron(); //Auto Checkout CRON;
+        //autoPaymentCheck(); //Auto Payment Check CRON;
 
         app.listen(PORT, () => {
             console.log("[*] Server running on " + PORT);
