@@ -10,6 +10,8 @@ const { default: mongoose } = require("mongoose");
 const paymentProcess = async (req, res) => {
     const { id, type } = req.body;
 
+    return res.status(400).json({ err: "Something went wrong" })
+
     if (!id || !type) {
         return res.status(500).json({ err: "Please provide data" })
     }
