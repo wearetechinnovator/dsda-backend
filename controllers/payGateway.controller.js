@@ -4,13 +4,19 @@ const otherPaymentModel = require("../models/otherPayment.model");
 const payResponseModel = require("../models/payResponse.model");
 const fetch = require("node-fetch");
 const { default: mongoose } = require("mongoose");
+const settingModel = require("../models/setting.model");
 
 
 
 const paymentProcess = async (req, res) => {
     const { id, type } = req.body;
 
-    return res.status(400).json({ err: "Something went wrong" })
+    // =========== [Check Payment Permission active or not] ============
+    const getSiteSettingforCheck = await settingModel.findOne({});
+    if (!getSiteSettingforCheck.payment_oparetion) {
+        return res.status(400).json({ err: "Payment is temporarily unavailable. Please try again later." });
+    }
+
 
     if (!id || !type) {
         return res.status(500).json({ err: "Please provide data" })

@@ -22,6 +22,14 @@ const settingSchema = new mongoose.Schema({
         default: 5
     },
     logo: String,
+    payment_oparetion:{
+        type: Boolean,
+        default: true
+    },
+    booking_oparetion:{
+        type: Boolean,
+        default: true
+    },
     isDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=Active | 1=Trash | 2=Permanent Delete

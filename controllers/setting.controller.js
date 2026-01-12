@@ -4,7 +4,8 @@ const settingModel = require("../models/setting.model");
 const create = async (req, res) => {
     const {
         title, email, contact_number, address, charges_per_tourist, logo,
-        age_for_charges, day_for_checkin_checkout, payment_start_date
+        age_for_charges, day_for_checkin_checkout, payment_start_date, booking_oparetion,
+        payment_oparetion
     } = req.body;
 
     // validation
@@ -27,13 +28,15 @@ const create = async (req, res) => {
             logo,
             age_for_charges,
             day_for_checkin_checkout,
-            payment_start_date
+            payment_start_date,
+            payment_oparetion,
+            booking_oparetion
         });
 
         return res.status(201).json(newSetting);
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 };
@@ -42,7 +45,9 @@ const create = async (req, res) => {
 const update = async (req, res) => {
     const { title, email, contact_number,
         address, charges_per_tourist, logo, isLogo,
-        age_for_charges, day_for_checkin_checkout, payment_start_date
+        age_for_charges, day_for_checkin_checkout, payment_start_date,
+        payment_oparetion,
+        booking_oparetion
     } = req.body;
 
 
@@ -61,7 +66,8 @@ const update = async (req, res) => {
     try {
         const update = await settingModel.updateOne({}, {
             title, email, contact_number, address, charges_per_tourist, logo,
-            age_for_charges, day_for_checkin_checkout, payment_start_date
+            age_for_charges, day_for_checkin_checkout, payment_start_date,
+            payment_oparetion, booking_oparetion
         })
 
         if (update.modifiedCount === 0) {
@@ -71,7 +77,7 @@ const update = async (req, res) => {
         return res.status(200).json({ msg: "Setting update success" });
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -88,7 +94,7 @@ const get = async (req, res) => {
         return res.status(200).json(setting);
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 };
