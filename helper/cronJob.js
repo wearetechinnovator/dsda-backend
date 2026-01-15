@@ -8,7 +8,7 @@ const { autoStatusCheck } = require('../controllers/payGateway.controller');
 
 const amenityCron = async () => {
     const settings = await settingModel.findOne({}, { payment_start_date: 1 });
-    const date = parseInt(settings?.payment_start_date) - 1;
+    const date = parseInt(settings?.payment_start_date);
 
     cron.schedule(`5 0 ${date} * *`, async () => {
         await addAmenities();
@@ -32,7 +32,7 @@ const autoChekoutCron = async () => {
 
 
 
-const autoPaymentCheck = async()=>{
+const autoPaymentCheck = async () => {
     cron.schedule(`5 5 * * *`, async () => {
         await autoStatusCheck();
     }, { timezone: "Asia/Kolkata" });
