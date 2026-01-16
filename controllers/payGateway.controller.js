@@ -263,7 +263,6 @@ const paymentStatusCheck = async (req, res) => {
         else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030") {
 
             if (type === "monthly") {
-                console.log("ttt", payResponse.responseCode)
                 await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
                     $set: {
                         amenities_payment_date: date(payResponse.paymentDateTime),
@@ -352,7 +351,6 @@ const paymentStatusCheck = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error)
         return res.status(500).json({ err: "Something went wrong", status: 'Invalid' })
     }
 }
@@ -456,7 +454,6 @@ const autoStatusCheck = async () => {
         else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030") {
 
             if (type === "monthly") {
-                console.log("ttt", payResponse.responseCode)
                 await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
                     $set: {
                         amenities_payment_date: date(payResponse.paymentDateTime),

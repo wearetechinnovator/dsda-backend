@@ -31,7 +31,7 @@ const login = async (req, res) => {
 
 
   try {
-    const hotel = await hotelModel.findOne({ hotel_username: username, IsDel:"0" }, { password: 0 });
+    const hotel = await hotelModel.findOne({ hotel_username: username, IsDel: "0" }, { password: 0 });
     if (!hotel) {
       return res.status(404).json({ err: 'User not found' });
     }
@@ -234,7 +234,6 @@ const update = async (req, res) => {
     return res.status(200).json({ msg: "Hotel updated successfully" });
 
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ err: "Something went wrong" });
   }
 
@@ -243,6 +242,8 @@ const update = async (req, res) => {
 
 const get = async (req, res) => {
   const all = req.body?.all;
+  const month = req.body?.month;
+  const year = req.body?.year;
   const id = req.body?.id;
   const limit = req.body?.limit ?? 10;
   const page = req.body?.page ?? 1;
@@ -291,9 +292,43 @@ const get = async (req, res) => {
           {
             $lookup: {
               from: "amenities",
-              let: { hotelId: "$_id" },
+              let: {
+                hotelId: "$_id",
+                month: month ?? null,
+                year: year ?? null
+              },
               pipeline: [
-                { $match: { $expr: { $and: [{ $eq: ["$amenities_hotel_id", "$$hotelId"] }, { $eq: ["$isDel", "0"] }] } } },
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ["$amenities_hotel_id", "$$hotelId"] },
+                        { $eq: ["$isDel", "0"] },
+                        { $eq: ["$amenities_payment_status", "1"] },
+
+                        {
+                          $cond: {
+                            if: {
+                              $and: [
+                                { $ne: ["$$month", null] },
+                                { $ne: ["$$year", null] },
+                                { $ne: ["$$month", ""] },
+                                { $ne: ["$$year", ""] }
+                              ]
+                            },
+                            then: {
+                              $and: [
+                                { $eq: ["$amenities_month", "$$month"] },
+                                { $eq: ["$amenities_year", "$$year"] }
+                              ]
+                            },
+                            else: true
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
                 { $group: { _id: null, totalAmenitiesAmount: { $sum: "$amenities_amount" } } }
               ],
               as: "amenitiesData"
@@ -675,14 +710,13 @@ const getBedAvailablity = async (req, res) => {
 
 
   } catch (error) {
-    console.log(error)
     return res.status(500).json({ err: "Something went wrong" })
   }
 }
 
 
 // Get Hotel Details for Public Access without authentication
-const getHotelDetails = async(req, res)=>{
+const getHotelDetails = async (req, res) => {
   const { hotelId } = req.body;
 
   if (!hotelId) {
@@ -692,14 +726,13 @@ const getHotelDetails = async(req, res)=>{
   try {
     const hotel = await hotelModel.findOne({
       _id: new mongoose.Types.ObjectId(String(hotelId)),
-    }, {hotel_name: 1});
-    
+    }, { hotel_name: 1 });
+
     if (!hotel) {
       return res.status(404).json({ err: "Hotel not found" });
     }
     return res.status(200).json(hotel);
   } catch (error) {
-    console.log(error)
     return res.status(500).json({ err: "Something went wrong" });
   }
 }
