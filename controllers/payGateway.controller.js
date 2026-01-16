@@ -79,17 +79,8 @@ const paymentProcess = async (req, res) => {
         const refNo = String(Date.now() + (Math.floor(Math.random() * 9) + 1));
         let hotelData, amount;
 
-        // Amenities Payment Update
+        // Get Amenities Details
         if (type === "monthly") {
-            await amenitiesModel.updateOne({ _id: id }, {
-                $set: {
-                    amenities_payment_init: "1",
-                    amenities_payment_status: "2",
-                    amenities_payment_mode: "1",
-                    amenities_payment_ref_no: refNo,
-                }
-            });
-
             const hotelDetails = await amenitiesModel.findOne({
                 _id: new mongoose.Types.ObjectId(String(id))
             }).populate("amenities_hotel_id");
@@ -98,15 +89,6 @@ const paymentProcess = async (req, res) => {
             amount = hotelDetails.amenities_amount;
         }
         else if (type === 'others') {
-            await otherPaymentModel.updateOne({ _id: id }, {
-                $set: {
-                    other_payment_payment_init: "1",
-                    other_payment_payment_status: "2",
-                    other_payment_payment_mode: "1",
-                    other_payment_payment_ref_no: refNo,
-                }
-            });
-
             const hotelDetails = await otherPaymentModel.findOne({
                 _id: new mongoose.Types.ObjectId(String(id))
             }).populate("other_payment_hotel_id");
@@ -149,6 +131,29 @@ const paymentProcess = async (req, res) => {
 
         if (payResponse.responseCode !== "R1000") {
             return res.status(400).json({ err: 'Unable to process payment' });
+        }
+
+        // Amenities Payment Update
+        if (type === "monthly") {
+            await amenitiesModel.updateOne({ _id: id }, {
+                $set: {
+                    amenities_payment_init: "1",
+                    amenities_payment_status: "2",
+                    amenities_payment_mode: "1",
+                    amenities_payment_ref_no: refNo,
+                }
+            });
+        }
+        else if (type === 'others') {
+            await otherPaymentModel.updateOne({ _id: id }, {
+                $set: {
+                    other_payment_payment_init: "1",
+                    other_payment_payment_status: "2",
+                    other_payment_payment_mode: "1",
+                    other_payment_payment_ref_no: refNo,
+                }
+            });
+
         }
 
         return res.status(200).json({
