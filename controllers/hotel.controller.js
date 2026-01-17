@@ -43,6 +43,17 @@ const login = async (req, res) => {
       }
     }
 
+    // Update IP and DateTime;
+    const ip = req.headers['x-forwarded-for']?.split(',').shift() || req.socket?.remoteAddress;
+    const dateTime = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+    await hotelModel.updateOne({ _id: hotel._id }, {
+      $set: {
+        last_login_ip: ip,
+        last_login_date_time: dateTime
+      }
+    })
+
     // Generate JWT token
     const token = jwt.sign({ id: hotel._id }, HOTEL_JWT_KEY);
     return res.status(200).json({ hotel, token });
