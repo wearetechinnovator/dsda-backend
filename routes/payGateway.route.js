@@ -1,4 +1,4 @@
-const { paymentProcess, paymentStatusCheck } = require("../controllers/payGateway.controller");
+const { paymentProcess, paymentStatusCheck, printReceipt } = require("../controllers/payGateway.controller");
 const router = require("express").Router();
 const middleware = require("../middleware/middleware");
 
@@ -11,6 +11,9 @@ router
     .route("/check-status")
     .post(middleware, paymentStatusCheck);
 
+router
+    .route("/print-receipt")
+    .post(middleware, printReceipt);
 
 
 module.exports = router;

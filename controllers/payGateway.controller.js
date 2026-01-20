@@ -128,7 +128,7 @@ const paymentProcess = async (req, res) => {
             body: JSON.stringify(payload)
         });
         const payResponse = await payment.json();
-        
+
         if (payResponse.responseCode !== "R1000") {
             return res.status(400).json({ err: 'Unable to process payment' });
         }
@@ -527,8 +527,46 @@ const autoStatusCheck = async () => {
 }
 
 
+// Print Receipt
+const printReceipt = async (req, res) => {
+    const { type, id } = req.body;
+
+    if (!type || !id) {
+        return res.status(400).json({ err: "Please provide type and id" });
+    }
+
+
+    try {
+        let data;
+
+        if (type === "monthly") {
+            data = await amenitiesModel.findOne({
+                _id: new mongoose.Types.ObjectId(String(id)),
+                amenities_payment_status: "1",
+                isDel: "0"
+            }).populate("amenities_hotel_id");
+        } else if (type === "other") {
+            data = await otherPaymentModel.findOne({
+                _id: new mongoose.Types.ObjectId(String(id)),
+                other_payment_payment_status: "1",
+                isDel: "0"
+            }).populate("other_payment_hotel_id");
+        }
+
+        if (!data) {
+            return res.status(400).json({ err: "No payment record found" });
+        }
+
+        return res.status(200).json({ data: data });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ err: "Something went wrong" })
+    }
+}
+
 module.exports = {
     paymentProcess,
     paymentStatusCheck,
-    autoStatusCheck
+    autoStatusCheck,
+    printReceipt
 }

@@ -84,6 +84,7 @@ const getPayment = async (req, res) => {
     const transactionId = req.body?.transactionid;
     const skip = (page - 1) * limit;
 
+
     try {
         if (id) {
             const data = await otherPaymentModel.findOne({ _id: id, isDel: "0" }).populate('other_payment_hotel_id');
@@ -100,7 +101,30 @@ const getPayment = async (req, res) => {
 
             if (transactionId) {
                 query.other_payment_hotel_id = new mongoose.Types.ObjectId(String(hotelId));
-                query.other_payment_payment_transaction_id = regex;
+                query.$or = [
+                    { other_payment_payment_transaction_id: regex },
+                    { other_payment_purpose: regex },
+
+                    {
+                        $expr: {
+                            $regexMatch: {
+                                input: { $toString: "$other_payment_amount" },
+                                regex: search,
+                                options: "i"
+                            }
+                        }
+                    },
+                    {
+                        $expr: {
+                            $regexMatch: {
+                                input: { $toString: "$other_payment_payment_date" },
+                                regex: search,
+                                options: "i"
+                            }
+                        }
+                    }
+                ];
+
             } else {
                 query.other_payment_payment_ref_no = regex;
             }

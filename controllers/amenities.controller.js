@@ -76,7 +76,7 @@ const addAmenities = async (req, res) => {
 
 
 const updateAmenities = async (req, res) => {
-    const { mode, transactionId, status, receiptNo, id } = req.body;
+    const { mode, transactionId, status, receiptNo, id, date } = req.body;
 
 
     if ([mode, status, id].some(field => !field || field === "")) {
@@ -90,6 +90,7 @@ const updateAmenities = async (req, res) => {
             amenities_receipt_number: receiptNo,
             amenities_payment_status: status === "ni" ? '0' : status,
             amenities_payment_init: status === "ni" ? '0' : '1',
+            amenities_payment_date: date
         }, { new: true });
 
         if (!data) {

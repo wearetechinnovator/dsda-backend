@@ -52,7 +52,7 @@ connection().then(con => {
     if (con) {
         amenityCron(); //Amenity CRON;
         autoChekoutCron(); //Auto Checkout CRON;
-        autoPaymentCheck(); //Auto Payment Check CRON;
+        //autoPaymentCheck(); //Auto Payment Check CRON;
 
         app.listen(PORT, () => {
             console.log("[*] Server running on " + PORT);
