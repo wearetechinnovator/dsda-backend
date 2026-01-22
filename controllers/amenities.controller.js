@@ -71,6 +71,7 @@ const addAmenities = async (req, res) => {
         // return res.send(result)
 
     } catch (error) {
+        console.error("Error in addAmenities CRON:", error);
     }
 }
 
