@@ -10,7 +10,7 @@ const amenityCron = async () => {
     const settings = await settingModel.findOne({}, { payment_start_date: 1 });
     const date = parseInt(settings?.payment_start_date);
 
-    cron.schedule(`30 1 ${date} * *`, async () => {
+    cron.schedule(`37 1 ${date} * *`, async () => {
         await addAmenities();
         console.log("Amenity CRON executed", date);
     }, { timezone: "Asia/Kolkata" });
