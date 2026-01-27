@@ -12,6 +12,7 @@ const amenitiesSchema = new mongoose.Schema({
         type: String,
         index: true
     },   // After successs or failure
+    amenities_payment_time: String,   // After successs or failure
     amenities_payment_init: {
         type: String,
         enum: ['0', '1'], // 0=No | 1=Yes 

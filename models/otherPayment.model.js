@@ -9,6 +9,7 @@ const otherPaymentSchema = new mongoose.Schema({
     },
     other_payment_amount: Number,
     other_payment_payment_date: String,
+    other_payment_payment_time: String,
     other_payment_payment_init: {
         type: String,
         enum: ['0', '1'], // 0=No | 1=Yes 

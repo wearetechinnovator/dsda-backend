@@ -6,7 +6,7 @@ const settingModel = require("../models/setting.model");
 
 // USE IN CRON JOB TO SYNC AMENITIES PAYMENT DATA MONTHLY
 // =======================================================
-const addAmenities = async (req, res) => { 
+const addAmenities = async (req, res) => {
     try {
         // Get Start and End Date of Previous Month;
         const d = new Date();
@@ -119,7 +119,7 @@ const getAmenities = async (req, res) => {
     const month = req.body?.month;
     const year = req.body?.year;
     const payStatus = req.body?.payStatus;
-
+    const status = req.body?.status;
 
     try {
 
@@ -167,7 +167,8 @@ const getAmenities = async (req, res) => {
                     $match: {
                         $or: [
                             { "amenities_payment_transaction_id": { $regex: regex } },
-                            { "amenities_hotel_id.hotel_name": { $regex: regex } }
+                            { "amenities_hotel_id.hotel_name": { $regex: regex } },
+                            { "amenities_receipt_number": { $regex: regex } }
                         ]
                     }
                 }
@@ -185,8 +186,38 @@ const getAmenities = async (req, res) => {
 
         let query = { isDel: "0" };
         if (startDate && endDate) {
-            query.amenities_date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+            query.$expr = {
+                $and: [
+                    {
+                        $gte: [
+                            {
+                                $dateFromString: {
+                                    dateString: "$amenities_payment_date",
+                                    format: "%Y-%m-%d",
+                                    onError: null,
+                                    onNull: null
+                                }
+                            },
+                            new Date(startDate)
+                        ]
+                    },
+                    {
+                        $lte: [
+                            {
+                                $dateFromString: {
+                                    dateString: "$amenities_payment_date",
+                                    format: "%Y-%m-%d",
+                                    onError: null,
+                                    onNull: null
+                                }
+                            },
+                            new Date(endDate)
+                        ]
+                    }
+                ]
+            };
         }
+
         if (hotelId) query.amenities_hotel_id = hotelId;
         if (year) query.amenities_year = year;
         if (month) query.amenities_month = month;
@@ -196,13 +227,31 @@ const getAmenities = async (req, res) => {
                 query.amenities_payment_status = { $ne: "1" }
             }
         }
-
+        if (status) {
+            if (status === "ni") {
+                query.$and = [
+                    { amenities_payment_init: '0' },
+                    { amenities_payment_status: '0' }
+                ];
+            }
+            else if (status === "0") {
+                query.$and = [
+                    { amenities_payment_init: '1' },
+                    { amenities_payment_status: '0' }
+                ];
+            }
+            else if (status !== "all") {
+                query.amenities_payment_status = status;
+            }
+        }
 
 
         const data = await amenitiesModel.find(query)
             .skip(skip)
             .limit(limit)
-            .sort({ _id: -1 })
+            .sort({ 
+                amenities_payment_date: -1, amenities_payment_time:-1, _id: -1, 
+            })
             .populate('amenities_hotel_id');
 
         const totalCount = await amenitiesModel.countDocuments(query);
@@ -212,6 +261,7 @@ const getAmenities = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ err: "Something went wrong" });
     }
 

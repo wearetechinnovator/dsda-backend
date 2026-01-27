@@ -221,6 +221,7 @@ const paymentStatusCheck = async (req, res) => {
         });
         const payResponse = await payment.json();
         const date = s => `${s?.slice(0, 4)}-${s?.slice(4, 6)}-${s?.slice(6, 8)}`;
+        const time = s => `${s.slice(8, 10)}:${s.slice(10, 12)}:${s.slice(12, 14)}`;
 
 
         // ONLY FOR DEVELOPER.......
@@ -243,8 +244,9 @@ const paymentStatusCheck = async (req, res) => {
                 await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
                     $set: {
                         amenities_payment_date: date(payResponse.paymentDateTime),
+                        amenities_payment_time: time(payResponse.paymentDateTime),
                         amenities_payment_status: "1",
-                        amenities_payment_transaction_id: refNo,
+                        amenities_payment_transaction_id: payResponse.txnID,
                         amenities_transaction_details: JSON.stringify(payResponse),
                     }
                 });
@@ -253,8 +255,9 @@ const paymentStatusCheck = async (req, res) => {
                 await otherPaymentModel.updateOne({ other_payment_payment_ref_no: refNo, isDel: "0" }, {
                     $set: {
                         other_payment_payment_date: date(payResponse.paymentDateTime),
+                        other_payment_payment_time: time(payResponse.paymentDateTime),
                         other_payment_payment_status: "1",
-                        other_payment_payment_transaction_id: refNo,
+                        other_payment_payment_transaction_id:  payResponse.txnID,
                         other_payment_transaction_details: JSON.stringify(payResponse),
                     }
                 });

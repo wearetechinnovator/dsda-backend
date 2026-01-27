@@ -83,6 +83,9 @@ const getPayment = async (req, res) => {
     const purpose = req.body?.purpose;
     const transactionId = req.body?.transactionid;
     const skip = (page - 1) * limit;
+    const startDate = req.body?.startDate;
+    const endDate = req.body?.endDate;
+    const status = req.body?.status;
 
 
     try {
@@ -140,6 +143,55 @@ const getPayment = async (req, res) => {
         if (hotelId) query.other_payment_hotel_id = new mongoose.Types.ObjectId(String(hotelId));
         if (purpose) query.other_payment_purpose = purpose;
         if (amount) query.other_payment_amount = amount;
+        if (startDate && endDate) {
+            query.$expr = {
+                $and: [
+                    {
+                        $gte: [
+                            {
+                                $dateFromString: {
+                                    dateString: "$other_payment_payment_date",
+                                    format: "%Y-%m-%d",
+                                    onError: null,
+                                    onNull: null
+                                }
+                            },
+                            new Date(startDate)
+                        ]
+                    },
+                    {
+                        $lte: [
+                            {
+                                $dateFromString: {
+                                    dateString: "$other_payment_payment_date",
+                                    format: "%Y-%m-%d",
+                                    onError: null,
+                                    onNull: null
+                                }
+                            },
+                            new Date(endDate)
+                        ]
+                    }
+                ]
+            };
+        }
+        if (status) {
+            if (status === "ni") {
+                query.$and = [
+                    { other_payment_payment_init: '0' },
+                    { other_payment_payment_status: '0' }
+                ];
+            }
+            else if (status === "0") {
+                query.$and = [
+                    { other_payment_payment_init: '1' },
+                    { other_payment_payment_status: '0' }
+                ];
+            }
+            else if (status !== "all") {
+                query.other_payment_payment_status = status;
+            }
+        }
 
         const data = await otherPaymentModel.find(query)
             .skip(skip)
