@@ -273,7 +273,7 @@ const paymentStatusCheck = async (req, res) => {
             if (type === "monthly") {
                 await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
                     $set: {
-                        amenities_payment_date: date(payResponse.paymentDateTime),
+                        amenities_payment_date: new Date().toISOString().split("T")[0],
                         amenities_payment_status: "0",
                         amenities_transaction_details: JSON.stringify(payResponse),
                     }
@@ -282,7 +282,7 @@ const paymentStatusCheck = async (req, res) => {
             else if (type === "others") {
                 await otherPaymentModel.updateOne({ other_payment_payment_ref_no: refNo, isDel: "0" }, {
                     $set: {
-                        other_payment_payment_date: date(payResponse.paymentDateTime),
+                        other_payment_payment_date: new Date().toISOString().split("T")[0],
                         other_payment_payment_status: "0",
                         other_payment_transaction_details: JSON.stringify(payResponse),
                     }
