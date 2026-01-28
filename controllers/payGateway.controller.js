@@ -76,7 +76,10 @@ const paymentProcess = async (req, res) => {
     }
 
     function replaceSpecialCharsWithSpace(str) {
-        return str.replace(/[^a-zA-Z0-9]/g, " ");
+        return str
+            .replace(/[^a-zA-Z0-9]/g, " ") // replace special chars with space
+            .replace(/\s+/g, " ")         // remove double/multiple spaces
+            .trim();                      // remove leading & trailing space
     }
 
     try {
