@@ -75,6 +75,10 @@ const paymentProcess = async (req, res) => {
         return `${yyyy}${MM}${dd}${HH}${mm}${ss}`;
     }
 
+    function replaceSpecialCharsWithSpace(str) {
+        return str.replace(/[^a-zA-Z0-9]/g, " ");
+    }
+
     try {
         const refNo = String(Date.now() + (Math.floor(Math.random() * 9) + 1));
         let hotelData, amount;
@@ -114,7 +118,7 @@ const paymentProcess = async (req, res) => {
             "returnURL": `${process.env.RETURN_URL}?ref=${refNo}&type=${type}`,
             "txnDate": getTxnDate(),
             "customerMobileNo": hotelData.hotel_proprietor_phone,
-            "customerName": hotelData.hotel_name,
+            "customerName": replaceSpecialCharsWithSpace(hotelData.hotel_name),
             "addlParam1": type
         };
         payload.secureHash = generateSecureHash(payload);
@@ -258,7 +262,7 @@ const paymentStatusCheck = async (req, res) => {
                         other_payment_payment_date: date(payResponse.paymentDateTime),
                         other_payment_payment_time: time(payResponse.paymentDateTime),
                         other_payment_payment_status: "1",
-                        other_payment_payment_transaction_id:  payResponse.txnID,
+                        other_payment_payment_transaction_id: payResponse.txnID,
                         other_payment_transaction_details: JSON.stringify(payResponse),
                     }
                 });
