@@ -129,6 +129,7 @@ const paymentProcess = async (req, res) => {
         });
         const payResponse = await payment.json();
 
+        console.log(payResponse);
         if (payResponse.responseCode !== "R1000") {
             return res.status(400).json({ err: 'Unable to process payment' });
         }
