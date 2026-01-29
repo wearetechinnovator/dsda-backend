@@ -24,7 +24,7 @@ const create = async (req, res) => {
         return res.status(200).json(insert);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -53,11 +53,12 @@ const update = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
 }
+
 
 const get = async (req, res) => {
     const id = req.body?.id;
@@ -80,9 +81,18 @@ const get = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
-            const data = await hotelCategoryModel.find({ isDel: "0", hotel_category_name: regex })
+            const data = await hotelCategoryModel.find({
+                isDel: trash ? "1" : "0", hotel_category_name: regex
+            }).skip(skip).limit(limit).sort({ _id: -1 });
 
-            return res.status(200).json(data);
+            const totalCount = await hotelCategoryModel.countDocuments({
+                isDel: trash ? "1" : "0",
+                hotel_category_name: regex
+            });
+
+            const result = { data: data, total: totalCount, page, limit };
+
+            return res.status(200).json(result);
         }
 
 
@@ -95,7 +105,7 @@ const get = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -122,7 +132,7 @@ const deleteRecord = async (req, res) => {
         return res.status(200).json({ msg: 'Records deleted successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -149,7 +159,7 @@ const restore = async (req, res) => {
         return res.status(200).json({ msg: 'Records restore successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 

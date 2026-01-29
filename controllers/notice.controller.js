@@ -98,9 +98,18 @@ const get = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
-            const data = await noticeModel.find({ isDel: "0", name: regex })
+            const data = await noticeModel.find({
+                isDel: trash ? "1" : "0", notice_title: regex
+            }).skip(skip).limit(limit).sort({ _id: -1 });
 
-            return res.status(200).json(data);
+            const totalCount = await noticeModel.countDocuments({
+                isDel: trash ? "1" : "0",
+                notice_title: regex
+            });
+
+            const result = { data: data, total: totalCount, page, limit };
+
+            return res.status(200).json(result);
         }
 
 

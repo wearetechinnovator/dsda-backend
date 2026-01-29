@@ -24,7 +24,7 @@ const create = async (req, res) => {
         return res.status(200).json(insert);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -49,7 +49,7 @@ const update = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -77,9 +77,18 @@ const get = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
-            const data = await districtModel.find({ isDel: "0", name: regex })
+            const data = await districtModel.find({
+                isDel: trash ? "1" : "0", name: regex
+            }).skip(skip).limit(limit).sort({ _id: -1 });
 
-            return res.status(200).json(data);
+            const totalCount = await districtModel.countDocuments({
+                isDel: trash ? "1" : "0",
+                name: regex
+            });
+
+            const result = { data: data, total: totalCount, page, limit };
+
+            return res.status(200).json(result);
         }
 
 
@@ -94,7 +103,7 @@ const get = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -121,7 +130,7 @@ const deleteRecord = async (req, res) => {
         return res.status(200).json({ msg: 'Records deleted successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -148,7 +157,7 @@ const restore = async (req, res) => {
         return res.status(200).json({ msg: 'Records restore successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 

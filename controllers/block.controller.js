@@ -75,11 +75,20 @@ const get = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
-            const data = await blockModel.find({ isDel: "0", name: regex })
+            const data = await blockModel.find({
+                isDel: trash ? "1" : "0", name: regex
+            }).skip(skip).limit(limit).sort({ _id: -1 });
 
-            return res.status(200).json(data);
+            const totalCount = await blockModel.countDocuments({
+                isDel: trash ? "1" : "0",
+                name: regex
+            });
+
+            const result = { data: data, total: totalCount, page, limit };
+
+            return res.status(200).json(result);
         }
-       
+
 
         const data = await blockModel.find({ isDel: trash ? "1" : "0" })
             .skip(skip).limit(limit).sort({ _id: -1 });

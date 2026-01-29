@@ -1,7 +1,7 @@
 const adminModel = require("../models/admin.model");
 const jwt = require("jsonwebtoken");
 const jwtKey = process.env.JWT_KEY;
-const HOTEL_JWT_KEY = process.env.HOTEL_JWT_KEY; 
+const HOTEL_JWT_KEY = process.env.HOTEL_JWT_KEY;
 const bcryptJs = require("bcryptjs");
 const crypto = require("crypto");
 const https = require('https')
@@ -70,7 +70,7 @@ const checkToken = async (req, res) => {
         let decode;
         if (token) {
             decode = jwt.verify(token, jwtKey);
-        }else{
+        } else {
             decode = jwt.verify(hotelToken, HOTEL_JWT_KEY);
         }
 
@@ -81,7 +81,7 @@ const checkToken = async (req, res) => {
         res.status(200).json(decode)
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 }
@@ -118,7 +118,7 @@ const create = async (req, res) => {
         return res.status(200).json(insert);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -150,7 +150,7 @@ const changePass = async (req, res) => {
         return res.status(200).json({ msg: 'Password changed successfully' });
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 }
@@ -185,7 +185,7 @@ const update = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-         
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -219,11 +219,20 @@ const get = async (req, res) => {
 
         if (search) {
             const regex = new RegExp(search, "i");
-            const data = await adminModel.find({ isDel: "0", name: regex })
+            const data = await adminModel.find({
+                isDel: trash ? "1" : "0", name: regex
+            }).skip(skip).limit(limit).sort({ _id: -1 });
 
-            return res.status(200).json(data);
+            const totalCount = await adminModel.countDocuments({
+                isDel: trash ? "1" : "0",
+                name: regex
+            });
+
+            const result = { data: data, total: totalCount, page, limit };
+
+            return res.status(200).json(result);
         }
-     
+
 
         const users = await adminModel
             .find({ isDel: trash ? "1" : "0" }, { password: 0 })
@@ -238,7 +247,7 @@ const get = async (req, res) => {
         return res.status(200).json(result);
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 };
@@ -264,7 +273,7 @@ const deleteRecord = async (req, res) => {
         return res.status(200).json({ msg: 'Records deleted successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -291,7 +300,7 @@ const restore = async (req, res) => {
         return res.status(200).json({ msg: 'Records restore successfully', result });
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 
@@ -413,7 +422,7 @@ const getStats = async (req, res) => {
         })
 
     } catch (error) {
-        
+
         return res.status(500).json({ err: "Something went wrong" });
     }
 }
