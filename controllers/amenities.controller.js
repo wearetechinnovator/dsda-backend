@@ -249,10 +249,16 @@ const getAmenities = async (req, res) => {
         const data = await amenitiesModel.find(query)
             .skip(skip)
             .limit(limit)
-            .sort({ 
-                amenities_payment_date: -1, amenities_payment_time:-1, _id: -1, 
+            .sort({
+                amenities_payment_date: -1, amenities_payment_time: -1, _id: -1,
             })
-            .populate('amenities_hotel_id');
+            .populate({
+                path: 'amenities_hotel_id',
+                populate: {
+                    path: 'hotel_sector_id',
+                    model: 'sector'   // mongoose model name
+                }
+            });
 
         const totalCount = await amenitiesModel.countDocuments(query);
 
