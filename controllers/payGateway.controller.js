@@ -242,7 +242,7 @@ const paymentStatusCheck = async (req, res) => {
         })
 
 
-        if (payResponse?.txnStatus === "REQ") return 'Processing';
+        if (payResponse?.txnStatus === "REQ" || payResponse?.responseCode === "P0030") return 'Processing';
 
         else if (payResponse?.txnStatus === "SUC") {
             if (type === "monthly") {
