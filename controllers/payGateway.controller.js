@@ -275,7 +275,7 @@ const paymentStatusCheck = async (req, res) => {
 
             return "Success";
         }
-        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030") {
+        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR") {
 
             if (type === "monthly") {
                 await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
