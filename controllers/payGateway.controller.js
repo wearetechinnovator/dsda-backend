@@ -244,7 +244,7 @@ const paymentStatusCheck = async (req, res) => {
         })
 
         let initTime;
-        let oneHourCheck;
+        let oneHourCheck = false;
         if (type === "monthly") {
             const data = await amenitiesModel.findOne({ amenities_payment_ref_no: refNo, isDel: "0" });
             initTime = data.amenities_init_timestamp;
@@ -257,16 +257,19 @@ const paymentStatusCheck = async (req, res) => {
 
         const oneHour = 60 * 60 * 1000;
 
-        if (nowTime - initTime >= oneHour) {
-            oneHourCheck = false;
-        } else {
-            oneHourCheck = true;
+        if (initTime) {
+            if (nowTime - initTime >= oneHour) {
+                oneHourCheck = false;
+            } else {
+                oneHourCheck = true;
+            }
         }
 
-        // console.log("initTime", initTime)
-        // console.log("nowTime", nowTime)
-        // console.log("oneHourCheck", oneHourCheck)
-        
+
+        //console.log("initTime", initTime)
+        //console.log("nowTime", nowTime)
+        //console.log("oneHourCheck", oneHourCheck)
+
         if (payResponse?.txnStatus === "REQ" || (initTime && oneHourCheck && payResponse?.responseCode === "P0030")) return 'Processing';
 
         else if (payResponse?.txnStatus === "SUC") {
