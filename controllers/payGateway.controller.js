@@ -246,11 +246,11 @@ const paymentStatusCheck = async (req, res) => {
         let initTime;
         let oneHourCheck;
         if (type === "monthly") {
-            const data = await amenitiesModel.find({ amenities_payment_ref_no: refNo, isDel: "0" });
+            const data = await amenitiesModel.findOne({ amenities_payment_ref_no: refNo, isDel: "0" });
             initTime = data.amenities_init_timestamp;
             console.log("data", data)
         } else if (type === "others") {
-            const data = await otherPaymentModel.find({ other_payment_payment_ref_no: refNo, isDel: "0" });
+            const data = await otherPaymentModel.findOne({ other_payment_payment_ref_no: refNo, isDel: "0" });
             initTime = data.other_payment_init_timestamp;
         }
 
