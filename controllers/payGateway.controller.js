@@ -266,9 +266,9 @@ const paymentStatusCheck = async (req, res) => {
         }
 
 
-        //console.log("initTime", initTime)
-        //console.log("nowTime", nowTime)
-        //console.log("oneHourCheck", oneHourCheck)
+        console.log("initTime", initTime)
+        console.log("nowTime", nowTime)
+        console.log("oneHourCheck", oneHourCheck)
 
         if (payResponse?.txnStatus === "REQ" || (initTime && oneHourCheck && payResponse?.responseCode === "P0030")) return 'Processing';
 
@@ -394,6 +394,7 @@ const paymentStatusCheck = async (req, res) => {
 
 
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ err: "Something went wrong", status: 'Invalid' })
     }
 }
