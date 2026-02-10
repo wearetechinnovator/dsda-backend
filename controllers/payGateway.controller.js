@@ -148,6 +148,7 @@ const paymentProcess = async (req, res) => {
                     amenities_payment_status: "2",
                     amenities_payment_mode: "1",
                     amenities_payment_ref_no: refNo,
+                    amenities_init_timestamp: Date.now()
                 }
             });
         }
@@ -158,6 +159,7 @@ const paymentProcess = async (req, res) => {
                     other_payment_payment_status: "2",
                     other_payment_payment_mode: "1",
                     other_payment_payment_ref_no: refNo,
+                    other_payment_init_timestamp: Date.now()
                 }
             });
 
@@ -241,8 +243,27 @@ const paymentStatusCheck = async (req, res) => {
             amenities_transaction_details: JSON.stringify(payResponse)
         })
 
+        let initTime;
+        let oneHourCheck;
+        if (type === "monthly") {
+            const data = await amenitiesModel.find({ amenities_payment_ref_no: refNo, isDel: "0" });
+            initTime = data.amenities_init_timestamp
+        } else if (type === "others") {
+            const data = await otherPaymentModel.find({ other_payment_payment_ref_no: refNo, isDel: "0" });
+            initTime = data.amenities_init_timestamp
+        }
 
-        if (payResponse?.txnStatus === "REQ" || payResponse?.responseCode === "P0030") return 'Processing';
+        const nowTime = Date.now();
+
+        const oneHour = 60 * 60 * 1000;
+
+        if (nowTime - initTime >= oneHour) {
+            oneHourCheck = false;
+        } else {
+            oneHourCheck = true;
+        }
+
+        if (payResponse?.txnStatus === "REQ" || (initTime && oneHourCheck && payResponse?.responseCode === "P0030")) return 'Processing';
 
         else if (payResponse?.txnStatus === "SUC") {
             if (type === "monthly") {
@@ -275,7 +296,7 @@ const paymentStatusCheck = async (req, res) => {
 
             return "Success";
         }
-        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR") {
+        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030") {
 
             if (type === "monthly") {
                 await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {

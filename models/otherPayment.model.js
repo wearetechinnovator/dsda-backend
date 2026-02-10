@@ -30,6 +30,7 @@ const otherPaymentSchema = new mongoose.Schema({
     other_payment_transaction_details: String, //  Payment Gateway Response Details
     other_payment_purpose: String,
     other_payment_receipt_number: String,
+    other_payment_init_timestamp: Date,
     isDel: {
         type: String,
         enum: ['0', '1', '2'], // 0=Active | 1=Trash | 2=Permanent Delete
