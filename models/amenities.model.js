@@ -31,7 +31,7 @@ const amenitiesSchema = new mongoose.Schema({
         default: '0'
     }, // Before process and After successs or failure
     amenities_transaction_details: String, //  Payment Gateway Response Details  //After successs or failure
-    amenities_init_timestamp: Date,
+    amenities_init_timestamp: Number,
     amenities_month: {
         type: String
     }, // On Payment Creation

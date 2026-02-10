@@ -247,10 +247,10 @@ const paymentStatusCheck = async (req, res) => {
         let oneHourCheck;
         if (type === "monthly") {
             const data = await amenitiesModel.find({ amenities_payment_ref_no: refNo, isDel: "0" });
-            initTime = new Date(data.amenities_init_timestamp).getTime();
+            initTime = data.amenities_init_timestamp;
         } else if (type === "others") {
             const data = await otherPaymentModel.find({ other_payment_payment_ref_no: refNo, isDel: "0" });
-            initTime = new Date(data.other_payment_init_timestamp).getTime();
+            initTime = data.other_payment_init_timestamp;
         }
 
         const nowTime = Date.now();
@@ -262,6 +262,10 @@ const paymentStatusCheck = async (req, res) => {
         } else {
             oneHourCheck = true;
         }
+
+        console.log("initTime", initTime)
+        console.log("nowTime", nowTime)
+        console.log("oneHourCheck", oneHourCheck)
         
         if (payResponse?.txnStatus === "REQ" || (initTime && oneHourCheck && payResponse?.responseCode === "P0030")) return 'Processing';
 
