@@ -248,6 +248,7 @@ const paymentStatusCheck = async (req, res) => {
         if (type === "monthly") {
             const data = await amenitiesModel.find({ amenities_payment_ref_no: refNo, isDel: "0" });
             initTime = data.amenities_init_timestamp;
+            console.log("data", data.amenities_init_timestamp)
         } else if (type === "others") {
             const data = await otherPaymentModel.find({ other_payment_payment_ref_no: refNo, isDel: "0" });
             initTime = data.other_payment_init_timestamp;
