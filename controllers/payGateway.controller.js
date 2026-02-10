@@ -262,11 +262,12 @@ const paymentStatusCheck = async (req, res) => {
         } else {
             oneHourCheck = true;
         }
-
+        
+        console.log("initals", data.amenities_init_timestamp)
         console.log("inittime", initTime)
         console.log("oneHourCheck", oneHourCheck)
         console.log("nowTime", nowTime)
-        
+
         if (payResponse?.txnStatus === "REQ" || (initTime && oneHourCheck && payResponse?.responseCode === "P0030")) return 'Processing';
 
         else if (payResponse?.txnStatus === "SUC") {
