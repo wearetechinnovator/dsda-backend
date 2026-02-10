@@ -247,10 +247,10 @@ const paymentStatusCheck = async (req, res) => {
         let oneHourCheck = false;
         if (type === "monthly") {
             const data = await amenitiesModel.findOne({ amenities_payment_ref_no: refNo, isDel: "0" });
-            initTime = data.amenities_init_timestamp;
+            initTime = data?.amenities_init_timestamp || false;
         } else if (type === "others") {
             const data = await otherPaymentModel.findOne({ other_payment_payment_ref_no: refNo, isDel: "0" });
-            initTime = data.other_payment_init_timestamp;
+            initTime = data?.other_payment_init_timestamp || false;
         }
 
         const nowTime = Date.now();
