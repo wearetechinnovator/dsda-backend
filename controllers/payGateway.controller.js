@@ -266,10 +266,10 @@ const paymentStatusCheck = async (req, res) => {
         }
 
 
-        console.log("initTime", initTime)
-        console.log("nowTime", nowTime)
-        console.log("oneHourCheck", oneHourCheck)
-        console.log("Res", payResponse)
+        // console.log("initTime", initTime)
+        // console.log("nowTime", nowTime)
+        // console.log("oneHourCheck", oneHourCheck)
+        // console.log("Res", payResponse)
 
         if (payResponse?.txnStatus === "REQ" || (initTime && oneHourCheck && payResponse?.responseCode === "P0030")) return 'Processing';
 
@@ -304,7 +304,7 @@ const paymentStatusCheck = async (req, res) => {
 
             return "Success";
         }
-        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030") {
+        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030" || payResponse?.responseCode === "P0039") {
 
             if (type === "monthly") {
                 await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
@@ -395,7 +395,6 @@ const paymentStatusCheck = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error)
         return res.status(500).json({ err: "Something went wrong", status: 'Invalid' })
     }
 }
