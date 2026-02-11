@@ -271,7 +271,7 @@ const paymentStatusCheck = async (req, res) => {
         // console.log("oneHourCheck", oneHourCheck)
         // console.log("Res", payResponse)
 
-        if (payResponse?.txnStatus === "REQ" || (initTime && oneHourCheck && payResponse?.responseCode === "P0030")) return 'Processing';
+        if ((payResponse?.txnStatus === "REQ" && payResponse?.responseCode === "P1000") || (initTime && oneHourCheck && payResponse?.responseCode === "P0030")) return 'Processing';
 
         else if (payResponse?.txnStatus === "SUC") {
             if (type === "monthly") {
@@ -304,7 +304,7 @@ const paymentStatusCheck = async (req, res) => {
 
             return "Success";
         }
-        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030" || payResponse?.responseCode === "P0039") {
+        else if (payResponse?.txnStatus === "REJ" || payResponse?.txnStatus === "REQ" || payResponse?.txnStatus === "ERR" || payResponse?.responseCode === "P0030" || payResponse?.responseCode === "P0039") {
 
             if (type === "monthly") {
                 await amenitiesModel.updateOne({ amenities_payment_ref_no: refNo, isDel: "0" }, {
