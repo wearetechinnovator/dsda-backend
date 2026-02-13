@@ -305,7 +305,7 @@ const get = async (req, res) => {
               from: "amenities",
               let: {
                 hotelId: "$_id",
-                month: month ?? null,
+                month: String(Number(month)) ?? null,
                 year: year ?? null
               },
               pipeline: [
