@@ -4,8 +4,8 @@ const fetch = require("node-fetch");
 const settingModel = require("../models/setting.model");
 
 
-// USE IN CRON JOB TO SYNC AMENITIES PAYMENT DATA MONTHLY
-// =======================================================
+// USE IN CRON JOB TO SYNC AMENITIES PAYMENT DATA MONTHLY ALSO `ADMIN SETTING BUTTON`
+// =================================================================================
 const addAmenities = async (req, res) => {
     try {
         // Get Start and End Date of Previous Month;
@@ -68,10 +68,11 @@ const addAmenities = async (req, res) => {
             }
         })
 
-        // return res.send(result)
+        return res.status(200).send(result)
 
     } catch (error) {
         console.error("Error in addAmenities CRON:", error);
+        return res.status(500).json({ err: "Amenities not generate" })
     }
 }
 
